@@ -25,10 +25,15 @@ export class MyCallbackHandler extends BaseCallbackHandler {
   input: string;
   answer: string;
   freeze: boolean;
+  userHistory?: string[];
+  assistantHistory?: string[];
+  tags?: Record<string, string>;
+  start?: Date;
+  end?: Date;
 
   constructor(public endUser: string, public apiKey?: string) {
     super();
-    this.chain_steps = []; 
+    this.chain_steps = [];
     this.stack = {};
     this.input = "";
     this.answer = "";
@@ -76,13 +81,25 @@ export class MyCallbackHandler extends BaseCallbackHandler {
 
   async handleChainStart(chain: Serialized) {
     console.log(`Entering new ${chain.id} chain...`);
+    if (! this.start) {
+      this.start = new Date();
+    }
   }
 
   async handleChainEnd(_output: ChainValues) {
     console.log("Finished chain.");
+    this.end = new Date();
     if ("input" in _output && ("answer" in _output || "output" in _output)) {
       console.log("Setting input and answer...");
       this.setInputAnswer(_output.input, _output.answer || _output.output);
+    }
+    if ("chat_history" in _output) {
+      console.log("Handling chat history...");
+      let chatHistory = _output.chat_history as Array<HumanMessage | AIMessage>;
+      let userHistory = chatHistory.filter(h => h instanceof HumanMessage).map(h => h.content as string);
+      let assistantHistory = chatHistory.filter(h => h instanceof AIMessage).map(h => h.content as string);
+      this.userHistory = userHistory;
+      this.assistantHistory = assistantHistory;
     }
   }
 
@@ -91,7 +108,7 @@ export class MyCallbackHandler extends BaseCallbackHandler {
     const runId = uuidv4();
     let newStep = new ChainStep(runId, ChainStepName.Tool);
     newStep.query = JSON.stringify(action.toolInput);
-    newStep.metadata = { 
+    newStep.metadata = {
       toolName: action.tool,
     };
     this.addChainStepToStack(newStep, TOOL_ID);
@@ -121,7 +138,7 @@ export class MyCallbackHandler extends BaseCallbackHandler {
     // let newStep = new ChainStep(runId, "LLM");
   }
 
-  async handleLLMEnd(output: LLMResult, runId: string, parentRunId?: string, tags?: string[]): Promise<any>{
+  async handleLLMEnd(output: LLMResult, runId: string, parentRunId?: string, tags?: string[]): Promise<any> {
     console.log("Finished LLM...");
     const generations = output.generations[0];
     let outputText = generations[generations.length - 1].text;
@@ -141,13 +158,12 @@ export class MyCallbackHandler extends BaseCallbackHandler {
     //console.log(retriever, query, runId, parentRunId, tags, metadata, name);
     let newStep = new ChainStep(runId, ChainStepName.Retriever);
     newStep.query = query;
-    newStep.metadata = { 
+    newStep.metadata = {
       sourceClass: retriever.id[retriever.id.length - 1],
       sourceName: name,
       sourceTags: tags,
     };
     this.addChainStepToStack(newStep, runId, parentRunId);
-
   }
 
   async handleRetrieverEnd(documents: DocumentInterface<Record<string, any>>[], runId: string, parentRunId?: string, tags?: string[]): Promise<any> {
@@ -157,17 +173,17 @@ export class MyCallbackHandler extends BaseCallbackHandler {
   }
 
   async handleChatModelStart(
-    llm: Serialized, 
-    messages: BaseMessage[][], 
-    runId: string, 
-    parentRunId?: string, 
-    extraParams?: Record<string, unknown>, 
-    tags?: string[], 
-    metadata?: Record<string, unknown>, 
+    llm: Serialized,
+    messages: BaseMessage[][],
+    runId: string,
+    parentRunId?: string,
+    extraParams?: Record<string, unknown>,
+    tags?: string[],
+    metadata?: Record<string, unknown>,
     name?: string
   ): Promise<any> {
     console.log("Starting Chat Model...");
-  
+
     let modelName = "unknown";
     if (extraParams && extraParams.invocation_params) {
       const modelRecord = extraParams.invocation_params as Record<string, unknown>;
@@ -181,23 +197,23 @@ export class MyCallbackHandler extends BaseCallbackHandler {
     this.addChainStepToStack(newStep, runId, parentRunId);
   }
 
-  sendData(){
+  sendData() {
     const data = prepareDataForEndpoint(
-      this.input, 
-      this.answer, 
+      this.input,
+      this.answer,
       this.chain_steps,
-      new Date(), // add start time
-      new Date(), // add end time
-      [], 
-      [], 
+      this.start || new Date(), // add start time
+      this.end || new Date(), // add end time
+      this.userHistory || [],
+      this.assistantHistory || [],
       this.endUser,
-      {}
+      this.tags,
     );
     console.log(data);
     // sendDataToEndpoint("http://localhost:8000/api/v1/interactions/", data, this.apiKey);
   }
 }
-  
+
 
 // ################################## Example Retrieval Chain ##################################
 
@@ -269,6 +285,8 @@ const retrieverTool = await createRetrieverTool(retriever, {
 const tools = [retrieverTool];
 import { pull } from "langchain/hub";
 import { createOpenAIFunctionsAgent, AgentExecutor } from "langchain/agents";
+import { HumanMessage, AIMessage } from "@langchain/core/messages";
+
 
 // Get the prompt to use - you can modify this!
 // If you want to see the prompt in full, you can at:
@@ -293,13 +311,26 @@ const agentExecutor = new AgentExecutor({
   tools,
   verbose: false,
 });
-const agentResult = await agentExecutor.invoke(
+// const agentResult = await agentExecutor.invoke(
+//   {
+//     input: "how can LangSmith help with testing?",
+//   },
+//   {
+//     callbacks: [myCallbackHandler],
+//   }
+// );
+const agentResult3 = await agentExecutor.invoke(
   {
-    input: "how can LangSmith help with testing?",
+    chat_history: [
+      new HumanMessage("Can LangSmith help test my LLM applications?"),
+      new AIMessage("Yes!"),
+    ],
+    input: "Tell me how",
   },
   {
     callbacks: [myCallbackHandler],
   }
+
 );
 console.log(myCallbackHandler.chain_steps.length);
-//myCallbackHandler.sendData();
+myCallbackHandler.sendData();

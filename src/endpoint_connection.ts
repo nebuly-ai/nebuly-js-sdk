@@ -31,7 +31,7 @@ export function prepareDataForEndpoint(
     user_history: string[],
     assistant_history: string[],
     endUser: string,
-    tags: Record<string, string>
+    tags?: Record<string, string>
 ): Record<string, unknown> {
     // convert chain_steps to spans
     let dataSources = chainSteps.map((step) => {

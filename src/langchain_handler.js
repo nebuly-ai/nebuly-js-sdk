@@ -56,12 +56,24 @@ export class MyCallbackHandler extends BaseCallbackHandler {
     }
     async handleChainStart(chain) {
         console.log(`Entering new ${chain.id} chain...`);
+        if (!this.start) {
+            this.start = new Date();
+        }
     }
     async handleChainEnd(_output) {
         console.log("Finished chain.");
+        this.end = new Date();
         if ("input" in _output && ("answer" in _output || "output" in _output)) {
             console.log("Setting input and answer...");
             this.setInputAnswer(_output.input, _output.answer || _output.output);
+        }
+        if ("chat_history" in _output) {
+            console.log("Handling chat history...");
+            let chatHistory = _output.chat_history;
+            let userHistory = chatHistory.filter(h => h instanceof HumanMessage).map(h => h.content);
+            let assistantHistory = chatHistory.filter(h => h instanceof AIMessage).map(h => h.content);
+            this.userHistory = userHistory;
+            this.assistantHistory = assistantHistory;
         }
     }
     async handleAgentAction(action) {
@@ -140,9 +152,9 @@ export class MyCallbackHandler extends BaseCallbackHandler {
         this.addChainStepToStack(newStep, runId, parentRunId);
     }
     sendData() {
-        const data = prepareDataForEndpoint(this.input, this.answer, this.chain_steps, new Date(), // add start time
-        new Date(), // add end time
-        [], [], this.endUser, {});
+        const data = prepareDataForEndpoint(this.input, this.answer, this.chain_steps, this.start || new Date(), // add start time
+        this.end || new Date(), // add end time
+        this.userHistory || [], this.assistantHistory || [], this.endUser, this.tags);
         console.log(data);
         // sendDataToEndpoint("http://localhost:8000/api/v1/interactions/", data, this.apiKey);
     }
@@ -200,6 +212,7 @@ const retrieverTool = await createRetrieverTool(retriever, {
 const tools = [retrieverTool];
 import { pull } from "langchain/hub";
 import { createOpenAIFunctionsAgent, AgentExecutor } from "langchain/agents";
+import { HumanMessage, AIMessage } from "@langchain/core/messages";
 // Get the prompt to use - you can modify this!
 // If you want to see the prompt in full, you can at:
 // https://smith.langchain.com/hub/hwchase17/openai-functions-agent
@@ -218,10 +231,22 @@ const agentExecutor = new AgentExecutor({
     tools,
     verbose: false,
 });
-const agentResult = await agentExecutor.invoke({
-    input: "how can LangSmith help with testing?",
+// const agentResult = await agentExecutor.invoke(
+//   {
+//     input: "how can LangSmith help with testing?",
+//   },
+//   {
+//     callbacks: [myCallbackHandler],
+//   }
+// );
+const agentResult3 = await agentExecutor.invoke({
+    chat_history: [
+        new HumanMessage("Can LangSmith help test my LLM applications?"),
+        new AIMessage("Yes!"),
+    ],
+    input: "Tell me how",
 }, {
     callbacks: [myCallbackHandler],
 });
 console.log(myCallbackHandler.chain_steps.length);
-//myCallbackHandler.sendData();
+myCallbackHandler.sendData();
