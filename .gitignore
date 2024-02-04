@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Environment Variables
+.env
+
+# macOS filesystem files
+.DS_Store
+
+# Production build files
+dist/
+build/
+
+# Log files
+npm-debug.log*
+
+# Coverage directories
+coverage/
+.nyc_output
+
+# Editor directories and files
+.cache/
+.vscode/
+.idea/
+
