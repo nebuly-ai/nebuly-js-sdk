@@ -1,5 +1,8 @@
 {
   "name": "nebuly-js-sdk",
+  "version": "0.1.0",
+  "description": "Nebuly-AI server side SDK for JavaScript",
+  "main": "dist/index.js",
   "type": "module",
   "dependencies": {
     "@langchain/core": "^0.1.21"
