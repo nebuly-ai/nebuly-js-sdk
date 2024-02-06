@@ -1,11 +1,7 @@
 {
-  "name": "nebuly-langchain-js",
+  "name": "nebuly-js-sdk",
   "type": "module",
   "dependencies": {
-    "@langchain/community": "^0.0.26",
-    "@langchain/core": "^0.1.21",
-    "@langchain/openai": "^0.0.14",
-    "cheerio": "^1.0.0-rc.12",
-    "langchain": "^0.1.12"
+    "@langchain/core": "^0.1.21"
   }
 }
