@@ -6,9 +6,6 @@ import { createStuffDocumentsChain } from "langchain/chains/combine_documents";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { createRetrievalChain } from "langchain/chains/retrieval";
 import { ChatOpenAI } from "@langchain/openai";
-import { AIMessage, HumanMessage } from "@langchain/core/messages";
-import { pull } from "langchain/hub";
-import { createOpenAIFunctionsAgent, AgentExecutor } from "langchain/agents";
 
 import { NebulyCallbackHandler} from "@nebuly-ai/nebuly-js-sdk";
 
@@ -37,7 +34,9 @@ const prompt =
 
 Question: {input}`);
 
-const chatModel = new ChatOpenAI();
+const chatModel = new ChatOpenAI({
+  openAIApiKey: "<YOUR_OPENAI_API_KEY>"
+});
 const documentChain = await createStuffDocumentsChain({
   llm: chatModel,
   prompt,

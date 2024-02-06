@@ -29,21 +29,6 @@ const vectorstore = await MemoryVectorStore.fromDocuments(
   embeddings
 );
 
-const prompt =
-  ChatPromptTemplate.fromTemplate(`Answer the following question based only on the provided context:
-
-<context>
-{context}
-</context>
-
-Question: {input}`);
-
-const chatModel = new ChatOpenAI();
-const documentChain = await createStuffDocumentsChain({
-  llm: chatModel,
-  prompt,
-});
-
 const retriever = vectorstore.asRetriever();
 
 
@@ -62,6 +47,7 @@ const agentPrompt = await pull<ChatPromptTemplate>(
 const agentModel = new ChatOpenAI({
   modelName: "gpt-3.5-turbo-1106",
   temperature: 0,
+  openAIApiKey: "<YOUR_OPENAI_API_KEY>"
 });
 
 const agent = await createOpenAIFunctionsAgent({
