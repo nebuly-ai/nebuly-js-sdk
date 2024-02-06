@@ -4,6 +4,9 @@
   "description": "Nebuly-AI server side SDK for JavaScript",
   "main": "dist/index.js",
   "type": "module",
+  "files": [
+    "/dist"
+  ],
   "dependencies": {
     "@langchain/core": "^0.1.21"
   }
