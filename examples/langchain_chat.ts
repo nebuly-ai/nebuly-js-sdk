@@ -1,5 +1,5 @@
 import { ChatOpenAI } from "@langchain/openai";
-import { NebulyCallbackHandler } from 'nebuly-js-sdk/langchain-handler';
+import { NebulyCallbackHandler} from "@nebuly-ai/nebuly-js-sdk";
 
 let nebulyCallbackHandler = new NebulyCallbackHandler('<YOUR_USER_ID>', '<NEBULY_API_KEY>')
 const chatModel = new ChatOpenAI({

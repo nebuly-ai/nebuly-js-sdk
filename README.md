@@ -8,9 +8,9 @@ npm install @nebuly/sdk-js
 
 ## Usage
 ```typescript
-import { NebulyCallbackHandler } from '@nebuly/sdk-js/langchain-handler';
+import { NebulyCallbackHandler } from '@nebuly-ai/nebuly-js-sdk';
 
-let handler = new NebulyCallbackHandler(endUser='endUser', apiKey='apiKey');
+let handler = new NebulyCallbackHandler('endUser', 'apiKey');
 // Here add the handler to the call of your langchain chains or agents
 handler.sendData();
 ```

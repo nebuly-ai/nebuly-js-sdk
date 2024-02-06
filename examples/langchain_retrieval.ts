@@ -10,7 +10,7 @@ import { AIMessage, HumanMessage } from "@langchain/core/messages";
 import { pull } from "langchain/hub";
 import { createOpenAIFunctionsAgent, AgentExecutor } from "langchain/agents";
 
-import { NebulyCallbackHandler } from 'nebuly-js-sdk/langchain-handler';
+import { NebulyCallbackHandler} from "@nebuly-ai/nebuly-js-sdk";
 
 
 let myCallbackHandler = new NebulyCallbackHandler('<YOUR_USER_ID>', '<NEBULY_API_KEY>')
