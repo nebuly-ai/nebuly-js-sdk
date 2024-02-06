@@ -12,6 +12,7 @@
     "publish": "npm run build && npm publish --access public"
   },
   "dependencies": {
-    "@langchain/core": "^0.1.21"
+    "@langchain/core": "^0.1.21",
+    "uuid": "^9.0.1"
   }
 }

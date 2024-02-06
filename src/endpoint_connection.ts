@@ -1,6 +1,6 @@
 import { ChainStep } from './base.js';
 
-export async function sendDataToEndpoint(url: string, data: Record<string, unknown>, token: string) {
+export async function sendDataToEndpoint(url: string, data: Record<string, unknown>, token: string): Promise<Record<string, unknown> | undefined> {
     try {
         const response = await fetch(url, {
             method: 'POST', // or 'PUT' depending on the API
@@ -12,12 +12,11 @@ export async function sendDataToEndpoint(url: string, data: Record<string, unkno
         });
 
         if (!response.ok) {
-            console.log(await response.json());
             throw new Error(`Error: ${response.status}`);
         }
 
         const jsonResponse = await response.json();
-        console.log('Success:', jsonResponse);
+        return jsonResponse;
     } catch (error) {
         console.error('Error:', error);
     }

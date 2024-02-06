@@ -1,5 +1,3 @@
-import { ChatOpenAI } from "@langchain/openai";
-// import { ConsoleCallbackHandler } from "@langchain/core/tracers/console";
 import { v4 as uuidv4 } from 'uuid';
 
 import { Serialized } from "@langchain/core/load/serializable";
@@ -17,7 +15,8 @@ import { prepareDataForEndpoint, sendDataToEndpoint } from "./endpoint_connectio
 
 
 const TOOL_ID = "tool";
-const ENDPOINT_URL = "https://dev.backend.nebuly.com/event-ingestion/api/v1/events/trace_interaction";
+const ENDPOINT_URL = 
+process.env.NEBULY_ENDPOINT_URL || "https://backend.nebuly.com/event-ingestion/api/v1/events/trace_interaction";
 
 
 export class NebulyCallbackHandler extends BaseCallbackHandler {
@@ -40,11 +39,6 @@ export class NebulyCallbackHandler extends BaseCallbackHandler {
     this.input = "";
     this.answer = "";
     this.freeze = false;
-    if (apiKey) {
-      console.log("API key provided.");
-    } else {
-      console.log("No API key provided.");
-    }
   }
 
   setInputAnswer(input?: string, answer?: string) {
@@ -84,21 +78,17 @@ export class NebulyCallbackHandler extends BaseCallbackHandler {
   }
 
   async handleChainStart(chain: Serialized) {
-    console.log(`Entering new ${chain.id} chain...`);
     if (! this.start) {
       this.start = new Date();
     }
   }
 
   async handleChainEnd(_output: ChainValues) {
-    console.log("Finished chain.");
     this.end = new Date();
     if ("input" in _output && ("answer" in _output || "output" in _output)) {
-      console.log("Setting input and answer...");
       this.setInputAnswer(_output.input, _output.answer || _output.output);
     }
     if ("chat_history" in _output) {
-      console.log("Handling chat history...");
       let chatHistory = _output.chat_history as Array<HumanMessage | AIMessage>;
       let userHistory = chatHistory.filter(h => h instanceof HumanMessage).map(h => h.content as string);
       let assistantHistory = chatHistory.filter(h => h instanceof AIMessage).map(h => h.content as string);
@@ -108,7 +98,6 @@ export class NebulyCallbackHandler extends BaseCallbackHandler {
   }
 
   async handleAgentAction(action: AgentAction) {
-    console.log("Agent action...");
     const runId = uuidv4();
     let newStep = new ChainStep(runId, ChainStepName.Tool);
     newStep.query = JSON.stringify(action.toolInput);
@@ -120,30 +109,21 @@ export class NebulyCallbackHandler extends BaseCallbackHandler {
   }
 
   async handleToolEnd(output: string) {
-    console.log("Tool finished.");
     this.freeze = false;
     this.moveFromStackToChainSteps([output], TOOL_ID);
-    //console.log(output);
   }
 
-  async handleText(text: string) {
-    console.log("Handling text...");
-    console.log(text);
-  }
+  async handleText(text: string) {}
 
-  async handleAgentEnd(action: AgentFinish) {
-    console.log("Agent finished.")
-    //console.log(action.log);
-  }
+  async handleAgentEnd(action: AgentFinish) {}
 
   async handleLLMStart(llm: Serialized, prompts: string[], runId: string, parentRunId?: string, extraParams?: Record<string, unknown>, tags?: string[], metadata?: Record<string, unknown>, name?: string): Promise<any> {
-    console.log("Starting LLM...");
+    //console.log("Starting LLM...");
     //console.log(llm, prompts, runId, parentRunId, extraParams, tags, metadata, name);
     // let newStep = new ChainStep(runId, "LLM");
   }
 
   async handleLLMEnd(output: LLMResult, runId: string, parentRunId?: string, tags?: string[]): Promise<any> {
-    console.log("Finished LLM...");
     const generation = output.generations[0][output.generations[0].length - 1];
     let outputText = generation.text;
     let extraMetadata: Record<string, unknown> = {};
@@ -166,8 +146,6 @@ export class NebulyCallbackHandler extends BaseCallbackHandler {
   }
 
   async handleRetrieverStart(retriever: Serialized, query: string, runId: string, parentRunId?: string, tags?: string[], metadata?: Record<string, unknown>, name?: string): Promise<any> {
-    console.log("Starting Retriever...");
-    //console.log(retriever, query, runId, parentRunId, tags, metadata, name);
     let newStep = new ChainStep(runId, ChainStepName.Retriever);
     newStep.query = query;
     newStep.metadata = {
@@ -179,7 +157,6 @@ export class NebulyCallbackHandler extends BaseCallbackHandler {
   }
 
   async handleRetrieverEnd(documents: DocumentInterface<Record<string, any>>[], runId: string, parentRunId?: string, tags?: string[]): Promise<any> {
-    console.log("Finished Retriever...");
     const text = documents.map((doc) => doc.pageContent);
     this.moveFromStackToChainSteps(text, runId, parentRunId);
   }
@@ -194,8 +171,6 @@ export class NebulyCallbackHandler extends BaseCallbackHandler {
     metadata?: Record<string, unknown>,
     name?: string
   ): Promise<any> {
-    console.log("Starting Chat Model...");
-
     let modelName = "unknown";
     if (extraParams && extraParams.invocation_params) {
       const modelRecord = extraParams.invocation_params as Record<string, unknown>;
@@ -211,7 +186,7 @@ export class NebulyCallbackHandler extends BaseCallbackHandler {
     this.addChainStepToStack(newStep, runId, parentRunId);
   }
 
-  async sendData() {
+  async sendData(): Promise<Record<string, unknown> | undefined>{
     const data = prepareDataForEndpoint(
       this.input,
       this.answer,
@@ -223,13 +198,11 @@ export class NebulyCallbackHandler extends BaseCallbackHandler {
       this.endUser,
       this.tags,
     );
-    console.log(data);
     const apiKey = this.apiKey || process.env.NEBULY_API_KEY;
     if (!apiKey) {
       console.error("No API key provided.");
       return;
     }
-    console.log(data);
-    await sendDataToEndpoint(ENDPOINT_URL, data, apiKey);
+    return await sendDataToEndpoint(ENDPOINT_URL, data, apiKey);
   }
 }
