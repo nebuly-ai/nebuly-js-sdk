@@ -27,10 +27,17 @@ export class ChainStep {
             const output = this.response ? this.response[0] : "";
             const inputTokens = this.metadata.inputTokens as number || 0;
             const outputTokens = this.metadata.outputTokens as number || 0;
+            let history: string[][] = [];
+            const userHistory = this.metadata.userHistory as string[] || [];
+            const assistantHistory = this.metadata.assistantHistory as string[] || [];
+            const length = Math.min(userHistory.length, assistantHistory.length);
+            for (let i = 0; i < length; i++) {
+                history.push([userHistory[i], assistantHistory[i]]);
+            }
             return {
                 model: modelName,
                 system_prompt: systemPrompt,
-                history: [],
+                history: history,
                 input: input,
                 output: output,
                 input_tokens: inputTokens,

@@ -158,9 +158,11 @@ export class NebulyCallbackHandler extends BaseCallbackHandler {
                 modelName = modelRecord["model"];
             }
         }
+        let userHistory = messages[0].filter(m => m instanceof HumanMessage).map(m => m.content.toString());
+        let assistantHistory = messages[0].filter(m => m instanceof AIMessage).map(m => m.content.toString());
         let newStep = new ChainStep(runId, ChainStepName.LLM);
         newStep.query = messages[0][messages[0].length - 1].content.toString();
-        newStep.metadata = { model: modelName };
+        newStep.metadata = { model: modelName, userHistory: userHistory, assistantHistory: assistantHistory };
         this.addChainStepToStack(newStep, runId, parentRunId);
     }
     sendData() {
@@ -185,7 +187,6 @@ import { OpenAIEmbeddings } from "@langchain/openai";
 import { MemoryVectorStore } from "langchain/vectorstores/memory";
 import { createStuffDocumentsChain } from "langchain/chains/combine_documents";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
-import { createRetrievalChain } from "langchain/chains/retrieval";
 const loader = new CheerioWebBaseLoader("https://docs.smith.langchain.com/overview");
 const docs = await loader.load();
 const splitter = new RecursiveCharacterTextSplitter();
@@ -205,53 +206,47 @@ const documentChain = await createStuffDocumentsChain({
     prompt,
 });
 const retriever = vectorstore.asRetriever();
-const retrievalChain = await createRetrievalChain({
-    combineDocsChain: documentChain,
-    retriever,
-});
-const result = await retrievalChain.invoke({
-    input: "what is LangSmith?",
-}, {
-    callbacks: [myCallbackHandler],
-});
 /*
+const retrievalChain = await createRetrievalChain({
+  combineDocsChain: documentChain,
+  retriever,
+});
 
+const result = await retrievalChain.invoke({
+  input: "what is LangSmith?",
+},
+{
+  callbacks: [myCallbackHandler],
+}
+);
+
+*/
 // Create agent
 import { createRetrieverTool } from "langchain/tools/retriever";
-
 const retrieverTool = await createRetrieverTool(retriever, {
-  name: "langsmith_search",
-  description:
-    "Search for information about LangSmith. For any questions about LangSmith, you must use this tool!",
+    name: "langsmith_search",
+    description: "Search for information about LangSmith. For any questions about LangSmith, you must use this tool!",
 });
 const tools = [retrieverTool];
 import { pull } from "langchain/hub";
 import { createOpenAIFunctionsAgent, AgentExecutor } from "langchain/agents";
-import { HumanMessage, AIMessage } from "@langchain/core/messages";
-
-
 // Get the prompt to use - you can modify this!
 // If you want to see the prompt in full, you can at:
 // https://smith.langchain.com/hub/hwchase17/openai-functions-agent
-const agentPrompt = await pull<ChatPromptTemplate>(
-  "hwchase17/openai-functions-agent"
-);
-
+const agentPrompt = await pull("hwchase17/openai-functions-agent");
 const agentModel = new ChatOpenAI({
-  modelName: "gpt-3.5-turbo-1106",
-  temperature: 0,
+    modelName: "gpt-3.5-turbo-1106",
+    temperature: 0,
 });
-
 const agent = await createOpenAIFunctionsAgent({
-  llm: agentModel,
-  tools,
-  prompt: agentPrompt,
+    llm: agentModel,
+    tools,
+    prompt: agentPrompt,
 });
-
 const agentExecutor = new AgentExecutor({
-  agent,
-  tools,
-  verbose: false,
+    agent,
+    tools,
+    verbose: false,
 });
 // const agentResult = await agentExecutor.invoke(
 //   {
@@ -261,20 +256,14 @@ const agentExecutor = new AgentExecutor({
 //     callbacks: [myCallbackHandler],
 //   }
 // );
-/*
-const agentResult3 = await agentExecutor.invoke(
-  {
+const agentResult3 = await agentExecutor.invoke({
     chat_history: [
-      new HumanMessage("Can LangSmith help test my LLM applications?"),
-      new AIMessage("Yes!"),
+        new HumanMessage("Can LangSmith help test my LLM applications?"),
+        new AIMessage("Yes!"),
     ],
     input: "Tell me how",
-  },
-  {
+}, {
     callbacks: [myCallbackHandler],
-  }
-
-);
+});
 console.log(myCallbackHandler.chain_steps.length);
-*/
 myCallbackHandler.sendData();

@@ -29,7 +29,6 @@ export function prepareDataForEndpoint(input, answer, chainSteps, timeStart, tim
     for (let i = 0; i < length; i++) {
         history.push([user_history[i], assistant_history[i]]);
     }
-    console.log('history', history);
     const data = {
         interaction: {
             input: input,

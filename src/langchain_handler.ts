@@ -203,9 +203,11 @@ export class NebulyCallbackHandler extends BaseCallbackHandler {
         modelName = modelRecord["model"] as string;
       }
     }
+    let userHistory = messages[0].filter(m => m instanceof HumanMessage).map(m => m.content.toString());
+    let assistantHistory = messages[0].filter(m => m instanceof AIMessage).map(m => m.content.toString());    
     let newStep = new ChainStep(runId, ChainStepName.LLM);
     newStep.query = messages[0][messages[0].length - 1].content.toString();
-    newStep.metadata = { model: modelName };
+    newStep.metadata = { model: modelName, userHistory: userHistory, assistantHistory: assistantHistory };
     this.addChainStepToStack(newStep, runId, parentRunId);
   }
 
@@ -275,7 +277,7 @@ const documentChain = await createStuffDocumentsChain({
 
 const retriever = vectorstore.asRetriever();
 
-
+/*
 const retrievalChain = await createRetrievalChain({
   combineDocsChain: documentChain,
   retriever,
@@ -289,7 +291,7 @@ const result = await retrievalChain.invoke({
 }
 );
 
-/*
+*/
 
 // Create agent
 import { createRetrieverTool } from "langchain/tools/retriever";
@@ -302,8 +304,6 @@ const retrieverTool = await createRetrieverTool(retriever, {
 const tools = [retrieverTool];
 import { pull } from "langchain/hub";
 import { createOpenAIFunctionsAgent, AgentExecutor } from "langchain/agents";
-import { HumanMessage, AIMessage } from "@langchain/core/messages";
-
 
 // Get the prompt to use - you can modify this!
 // If you want to see the prompt in full, you can at:
@@ -336,7 +336,7 @@ const agentExecutor = new AgentExecutor({
 //     callbacks: [myCallbackHandler],
 //   }
 // );
-/*
+
 const agentResult3 = await agentExecutor.invoke(
   {
     chat_history: [
@@ -351,5 +351,4 @@ const agentResult3 = await agentExecutor.invoke(
 
 );
 console.log(myCallbackHandler.chain_steps.length);
-*/
 myCallbackHandler.sendData();
