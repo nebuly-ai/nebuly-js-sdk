@@ -13,26 +13,39 @@ export class ChainStep {
     isReady() {
         return this.query && this.response;
     }
-    toDataSource() {
-        let sourceName;
+    toTrace() {
         if (this.name === ChainStepName.LLM) {
-            sourceName = this.metadata.model;
+            const modelName = this.metadata.model;
+            const systemPrompt = this.metadata.systemPrompt || "";
+            const input = this.query;
+            const output = this.response ? this.response[0] : "";
+            return {
+                model: modelName,
+                system_prompt: systemPrompt,
+                history: [],
+                input: input,
+                output: output,
+            };
         }
         else if (this.name === ChainStepName.Retriever) {
-            sourceName = this.metadata.sourceName ? this.metadata.sourceName : this.metadata.sourceClass;
+            const sourceName = this.metadata.sourceName ? this.metadata.sourceName : this.metadata.sourceClass;
+            const input = this.query;
+            const outputs = this.response;
+            return {
+                source: sourceName,
+                input: input,
+                outputs: outputs,
+            };
         }
         else {
-            sourceName = this.metadata.toolName;
+            const toolName = this.metadata.toolName;
+            const input = this.query;
+            const outputs = this.response;
+            return {
+                source: toolName,
+                input: input,
+                outputs: outputs,
+            };
         }
-        return {
-            id: this.id,
-            source_type: this.name.toString(),
-            source_name: sourceName,
-            metadata: this.metadata,
-            query: this.query,
-            response: this.response,
-            called_start: this.start,
-            called_end: this.end,
-        };
     }
 }

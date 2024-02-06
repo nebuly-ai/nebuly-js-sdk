@@ -2,15 +2,17 @@ import { ChatOpenAI } from "@langchain/openai";
 // import { ConsoleCallbackHandler } from "@langchain/core/tracers/console";
 import { v4 as uuidv4 } from 'uuid';
 import { BaseCallbackHandler } from "@langchain/core/callbacks/base";
+import { HumanMessage, AIMessage } from "@langchain/core/messages";
 import { ChainStep, ChainStepName } from "./base.js";
-import { prepareDataForEndpoint } from "./endpoint_connection.js";
+import { prepareDataForEndpoint, sendDataToEndpoint } from "./endpoint_connection.js";
 const TOOL_ID = "tool";
-export class MyCallbackHandler extends BaseCallbackHandler {
+const ENDPOINT_URL = "https://dev.backend.nebuly.com/event-ingestion/api/v1/events/trace_interaction";
+export class NebulyCallbackHandler extends BaseCallbackHandler {
     constructor(endUser, apiKey) {
         super();
         this.endUser = endUser;
         this.apiKey = apiKey;
-        this.name = "MyCallbackHandler";
+        this.name = "NebulyCallbackHandler";
         this.chain_steps = [];
         this.stack = {};
         this.input = "";
@@ -21,7 +23,6 @@ export class MyCallbackHandler extends BaseCallbackHandler {
         }
         else {
             console.log("No API key provided.");
-            // this.apiKey = process.env.NEBULY_API_KEY;
         }
     }
     setInputAnswer(input, answer) {
@@ -43,14 +44,14 @@ export class MyCallbackHandler extends BaseCallbackHandler {
             this.stack[key] = [step];
         }
     }
-    moveFromStackToChainSteps(stepOutput, runId, parentRunId) {
+    moveFromStackToChainSteps(stepOutputs, runId, parentRunId) {
         if (this.freeze) {
             return;
         }
         const key = parentRunId ? (runId + parentRunId) : runId;
         let pendingStep = this.stack[key].pop();
         if (pendingStep) {
-            pendingStep.response = stepOutput;
+            pendingStep.response = stepOutputs;
             this.chain_steps.push(pendingStep);
         }
     }
@@ -90,7 +91,7 @@ export class MyCallbackHandler extends BaseCallbackHandler {
     async handleToolEnd(output) {
         console.log("Tool finished.");
         this.freeze = false;
-        this.moveFromStackToChainSteps(output, TOOL_ID);
+        this.moveFromStackToChainSteps([output], TOOL_ID);
         //console.log(output);
     }
     async handleText(text) {
@@ -118,7 +119,7 @@ export class MyCallbackHandler extends BaseCallbackHandler {
                 outputText = JSON.stringify(function_call);
             }
         }
-        this.moveFromStackToChainSteps(outputText, runId, parentRunId);
+        this.moveFromStackToChainSteps([outputText], runId, parentRunId);
     }
     async handleRetrieverStart(retriever, query, runId, parentRunId, tags, metadata, name) {
         console.log("Starting Retriever...");
@@ -134,7 +135,7 @@ export class MyCallbackHandler extends BaseCallbackHandler {
     }
     async handleRetrieverEnd(documents, runId, parentRunId, tags) {
         console.log("Finished Retriever...");
-        const text = documents.map((doc) => doc.pageContent).join(" ");
+        const text = documents.map((doc) => doc.pageContent);
         this.moveFromStackToChainSteps(text, runId, parentRunId);
     }
     async handleChatModelStart(llm, messages, runId, parentRunId, extraParams, tags, metadata, name) {
@@ -156,17 +157,24 @@ export class MyCallbackHandler extends BaseCallbackHandler {
         this.end || new Date(), // add end time
         this.userHistory || [], this.assistantHistory || [], this.endUser, this.tags);
         console.log(data);
-        // sendDataToEndpoint("http://localhost:8000/api/v1/interactions/", data, this.apiKey);
+        const apiKey = this.apiKey || process.env.NEBULY_API_KEY;
+        if (!apiKey) {
+            console.error("No API key provided.");
+            return;
+        }
+        console.log(data);
+        sendDataToEndpoint(ENDPOINT_URL, data, apiKey);
     }
 }
 // ################################## Example Retrieval Chain ##################################
-let myCallbackHandler = new MyCallbackHandler("Diego");
+let myCallbackHandler = new NebulyCallbackHandler("Diego");
 import { CheerioWebBaseLoader } from "langchain/document_loaders/web/cheerio";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import { OpenAIEmbeddings } from "@langchain/openai";
 import { MemoryVectorStore } from "langchain/vectorstores/memory";
 import { createStuffDocumentsChain } from "langchain/chains/combine_documents";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
+import { createRetrievalChain } from "langchain/chains/retrieval";
 const loader = new CheerioWebBaseLoader("https://docs.smith.langchain.com/overview");
 const docs = await loader.load();
 const splitter = new RecursiveCharacterTextSplitter();
@@ -186,50 +194,53 @@ const documentChain = await createStuffDocumentsChain({
     prompt,
 });
 const retriever = vectorstore.asRetriever();
-/*
 const retrievalChain = await createRetrievalChain({
-  combineDocsChain: documentChain,
-  retriever,
+    combineDocsChain: documentChain,
+    retriever,
 });
-
 const result = await retrievalChain.invoke({
-  input: "what is LangSmith?",
-},
-{
-  callbacks: [myCallbackHandler],
-}
-);
+    input: "what is LangSmith?",
+}, {
+    callbacks: [myCallbackHandler],
+});
+/*
 
-//console.log(result.answer);
-myCallbackHandler.sendData();
-*/
 // Create agent
 import { createRetrieverTool } from "langchain/tools/retriever";
+
 const retrieverTool = await createRetrieverTool(retriever, {
-    name: "langsmith_search",
-    description: "Search for information about LangSmith. For any questions about LangSmith, you must use this tool!",
+  name: "langsmith_search",
+  description:
+    "Search for information about LangSmith. For any questions about LangSmith, you must use this tool!",
 });
 const tools = [retrieverTool];
 import { pull } from "langchain/hub";
 import { createOpenAIFunctionsAgent, AgentExecutor } from "langchain/agents";
 import { HumanMessage, AIMessage } from "@langchain/core/messages";
+
+
 // Get the prompt to use - you can modify this!
 // If you want to see the prompt in full, you can at:
 // https://smith.langchain.com/hub/hwchase17/openai-functions-agent
-const agentPrompt = await pull("hwchase17/openai-functions-agent");
+const agentPrompt = await pull<ChatPromptTemplate>(
+  "hwchase17/openai-functions-agent"
+);
+
 const agentModel = new ChatOpenAI({
-    modelName: "gpt-3.5-turbo-1106",
-    temperature: 0,
+  modelName: "gpt-3.5-turbo-1106",
+  temperature: 0,
 });
+
 const agent = await createOpenAIFunctionsAgent({
-    llm: agentModel,
-    tools,
-    prompt: agentPrompt,
+  llm: agentModel,
+  tools,
+  prompt: agentPrompt,
 });
+
 const agentExecutor = new AgentExecutor({
-    agent,
-    tools,
-    verbose: false,
+  agent,
+  tools,
+  verbose: false,
 });
 // const agentResult = await agentExecutor.invoke(
 //   {
@@ -239,14 +250,20 @@ const agentExecutor = new AgentExecutor({
 //     callbacks: [myCallbackHandler],
 //   }
 // );
-const agentResult3 = await agentExecutor.invoke({
+/*
+const agentResult3 = await agentExecutor.invoke(
+  {
     chat_history: [
-        new HumanMessage("Can LangSmith help test my LLM applications?"),
-        new AIMessage("Yes!"),
+      new HumanMessage("Can LangSmith help test my LLM applications?"),
+      new AIMessage("Yes!"),
     ],
     input: "Tell me how",
-}, {
+  },
+  {
     callbacks: [myCallbackHandler],
-});
+  }
+
+);
 console.log(myCallbackHandler.chain_steps.length);
+*/
 myCallbackHandler.sendData();

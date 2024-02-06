@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { Serialized } from "@langchain/core/load/serializable";
 import { BaseCallbackHandler } from "@langchain/core/callbacks/base";
+import { HumanMessage, AIMessage } from "@langchain/core/messages";
 import { AgentAction, AgentFinish } from "@langchain/core/agents";
 import { ChainValues } from "@langchain/core/utils/types";
 import { LLMResult } from "@langchain/core/outputs";
@@ -16,10 +17,11 @@ import { prepareDataForEndpoint, sendDataToEndpoint } from "./endpoint_connectio
 
 
 const TOOL_ID = "tool";
+const ENDPOINT_URL = "https://dev.backend.nebuly.com/event-ingestion/api/v1/events/trace_interaction";
 
 
-export class MyCallbackHandler extends BaseCallbackHandler {
-  name: string = "MyCallbackHandler";
+export class NebulyCallbackHandler extends BaseCallbackHandler {
+  name: string = "NebulyCallbackHandler";
   chain_steps: ChainStep[];
   stack: Record<string, ChainStep[]>;
   input: string;
@@ -42,7 +44,6 @@ export class MyCallbackHandler extends BaseCallbackHandler {
       console.log("API key provided.");
     } else {
       console.log("No API key provided.");
-      // this.apiKey = process.env.NEBULY_API_KEY;
     }
   }
 
@@ -67,14 +68,14 @@ export class MyCallbackHandler extends BaseCallbackHandler {
     }
   }
 
-  moveFromStackToChainSteps(stepOutput: string, runId: string, parentRunId?: string) {
+  moveFromStackToChainSteps(stepOutputs: string[], runId: string, parentRunId?: string) {
     if (this.freeze) {
       return;
     }
     const key = parentRunId ? (runId + parentRunId) : runId;
     let pendingStep = this.stack[key].pop();
     if (pendingStep) {
-      pendingStep.response = stepOutput;
+      pendingStep.response = stepOutputs;
       this.chain_steps.push(pendingStep);
     }
   }
@@ -118,7 +119,7 @@ export class MyCallbackHandler extends BaseCallbackHandler {
   async handleToolEnd(output: string) {
     console.log("Tool finished.");
     this.freeze = false;
-    this.moveFromStackToChainSteps(output, TOOL_ID);
+    this.moveFromStackToChainSteps([output], TOOL_ID);
     //console.log(output);
   }
 
@@ -150,7 +151,7 @@ export class MyCallbackHandler extends BaseCallbackHandler {
         outputText = JSON.stringify(function_call);
       }
     }
-    this.moveFromStackToChainSteps(outputText, runId, parentRunId);
+    this.moveFromStackToChainSteps([outputText], runId, parentRunId);
   }
 
   async handleRetrieverStart(retriever: Serialized, query: string, runId: string, parentRunId?: string, tags?: string[], metadata?: Record<string, unknown>, name?: string): Promise<any> {
@@ -168,7 +169,7 @@ export class MyCallbackHandler extends BaseCallbackHandler {
 
   async handleRetrieverEnd(documents: DocumentInterface<Record<string, any>>[], runId: string, parentRunId?: string, tags?: string[]): Promise<any> {
     console.log("Finished Retriever...");
-    const text = documents.map((doc) => doc.pageContent).join(" ");
+    const text = documents.map((doc) => doc.pageContent);
     this.moveFromStackToChainSteps(text, runId, parentRunId);
   }
 
@@ -210,14 +211,20 @@ export class MyCallbackHandler extends BaseCallbackHandler {
       this.tags,
     );
     console.log(data);
-    // sendDataToEndpoint("http://localhost:8000/api/v1/interactions/", data, this.apiKey);
+    const apiKey = this.apiKey || process.env.NEBULY_API_KEY;
+    if (!apiKey) {
+      console.error("No API key provided.");
+      return;
+    }
+    console.log(data);
+    sendDataToEndpoint(ENDPOINT_URL, data, apiKey);
   }
 }
 
 
 // ################################## Example Retrieval Chain ##################################
 
-let myCallbackHandler = new MyCallbackHandler("Diego");
+let myCallbackHandler = new NebulyCallbackHandler("Diego");
 import { CheerioWebBaseLoader } from "langchain/document_loaders/web/cheerio";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import { OpenAIEmbeddings } from "@langchain/openai";
@@ -256,7 +263,7 @@ const documentChain = await createStuffDocumentsChain({
 
 const retriever = vectorstore.asRetriever();
 
-/*
+
 const retrievalChain = await createRetrievalChain({
   combineDocsChain: documentChain,
   retriever,
@@ -270,9 +277,7 @@ const result = await retrievalChain.invoke({
 }
 );
 
-//console.log(result.answer);
-myCallbackHandler.sendData();
-*/
+/*
 
 // Create agent
 import { createRetrieverTool } from "langchain/tools/retriever";
@@ -319,6 +324,7 @@ const agentExecutor = new AgentExecutor({
 //     callbacks: [myCallbackHandler],
 //   }
 // );
+/*
 const agentResult3 = await agentExecutor.invoke(
   {
     chat_history: [
@@ -333,4 +339,5 @@ const agentResult3 = await agentExecutor.invoke(
 
 );
 console.log(myCallbackHandler.chain_steps.length);
+*/
 myCallbackHandler.sendData();

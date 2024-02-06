@@ -9,6 +9,7 @@ export async function sendDataToEndpoint(url, data, token) {
             body: JSON.stringify(data)
         });
         if (!response.ok) {
+            console.log(await response.json());
             throw new Error(`Error: ${response.status}`);
         }
         const jsonResponse = await response.json();
@@ -18,34 +19,29 @@ export async function sendDataToEndpoint(url, data, token) {
         console.error('Error:', error);
     }
 }
-export function prepareDataForEndpoint(input, answer, chainSteps, timeStart, timeEnd, user_history, assistant_history, endUser, tags) {
+export function prepareDataForEndpoint(input, answer, chainSteps, timeStart, timeEnd, user_history, assistant_history, endUser, tags, anonymize) {
     // convert chain_steps to spans
-    let dataSources = chainSteps.map((step) => {
-        return step.toDataSource();
+    let traces = chainSteps.map((step) => {
+        return step.toTrace();
     });
+    let history = [];
+    const length = Math.min(user_history.length, assistant_history.length);
+    for (let i = 0; i < length; i++) {
+        history.push([user_history[i], assistant_history[i]]);
+    }
+    console.log('history', history);
     const data = {
-        input: input,
-        output: answer,
-        data_sources: dataSources, // convert chain_steps to spans
-        time_start: timeStart,
-        time_end: timeEnd,
-        history: [user_history, assistant_history],
-        // hierarchy: hierarchy, unclear if really needed since we are treating chains as flat
-        end_user: endUser,
-        tags: tags,
+        interaction: {
+            input: input,
+            output: answer,
+            time_start: timeStart,
+            time_end: timeEnd,
+            history: history,
+            end_user: endUser,
+            tags: tags || {},
+        },
+        traces: traces,
+        anonymize: anonymize || false,
     };
     return data;
 }
-/*
-class InteractionWatch:
-    input: str
-    output: str
-    time_end: datetime
-    time_start: datetime
-    spans: list[SpanWatch]
-    history: list[HistoryEntry]
-    hierarchy: dict[uuid.UUID, uuid.UUID | None]
-    end_user: str
-    end_user_group_profile: str | None
-    tags: dict[str, str] | None = None
-*/ 

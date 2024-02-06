@@ -7,7 +7,7 @@ export enum ChainStepName {
 export class ChainStep {
     metadata: Record<string, unknown>;
     query?: string;
-    response?: string;
+    response?: string[];
     start?: Date;
     end?: Date;
 
@@ -19,26 +19,39 @@ export class ChainStep {
         return this.query && this.response;
     }
 
-    toDataSource() {
-        let sourceName: string;
+    toTrace(): Record<string, unknown>{
         if (this.name === ChainStepName.LLM) {
-            sourceName = this.metadata.model as string;
+            const modelName = this.metadata.model as string;
+            const systemPrompt = this.metadata.systemPrompt as string || "";
+            const input = this.query as string;
+            const output = this.response ? this.response[0] : "";
+            return {
+                model: modelName,
+                system_prompt: systemPrompt,
+                history: [],
+                input: input,
+                output: output,
+            }
         }
         else if (this.name === ChainStepName.Retriever) {
-            sourceName = this.metadata.sourceName? this.metadata.sourceName as string: this.metadata.sourceClass as string;
+            const sourceName = this.metadata.sourceName? this.metadata.sourceName as string: this.metadata.sourceClass as string;
+            const input = this.query as string;
+            const outputs = this.response as string[];
+            return {
+                source: sourceName,
+                input: input,
+                outputs: outputs,
+            }
         }
         else {
-            sourceName = this.metadata.toolName as string;
+            const toolName = this.metadata.toolName as string;
+            const input = this.query as string;
+            const outputs = this.response as string[];
+            return {
+                source: toolName,
+                input: input,
+                outputs: outputs,
+            }
         }
-        return {
-            id: this.id,
-            source_type: this.name.toString(),
-            source_name: sourceName,
-            metadata: this.metadata,
-            query: this.query,
-            response: this.response,
-            called_start: this.start,
-            called_end: this.end,
-        };
     }
 }
