@@ -25,12 +25,16 @@ export class ChainStep {
             const systemPrompt = this.metadata.systemPrompt as string || "";
             const input = this.query as string;
             const output = this.response ? this.response[0] : "";
+            const inputTokens = this.metadata.inputTokens as number || 0;
+            const outputTokens = this.metadata.outputTokens as number || 0;
             return {
                 model: modelName,
                 system_prompt: systemPrompt,
                 history: [],
                 input: input,
                 output: output,
+                input_tokens: inputTokens,
+                output_tokens: outputTokens,
             }
         }
         else if (this.name === ChainStepName.Retriever) {

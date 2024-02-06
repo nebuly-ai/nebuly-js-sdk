@@ -44,13 +44,16 @@ export class NebulyCallbackHandler extends BaseCallbackHandler {
             this.stack[key] = [step];
         }
     }
-    moveFromStackToChainSteps(stepOutputs, runId, parentRunId) {
+    moveFromStackToChainSteps(stepOutputs, runId, parentRunId, extraMetadata) {
         if (this.freeze) {
             return;
         }
         const key = parentRunId ? (runId + parentRunId) : runId;
         let pendingStep = this.stack[key].pop();
         if (pendingStep) {
+            if (extraMetadata) {
+                pendingStep.metadata = Object.assign(Object.assign({}, pendingStep.metadata), extraMetadata);
+            }
             pendingStep.response = stepOutputs;
             this.chain_steps.push(pendingStep);
         }
@@ -109,17 +112,25 @@ export class NebulyCallbackHandler extends BaseCallbackHandler {
     }
     async handleLLMEnd(output, runId, parentRunId, tags) {
         console.log("Finished LLM...");
-        const generations = output.generations[0];
-        let outputText = generations[generations.length - 1].text;
+        const generation = output.generations[0][output.generations[0].length - 1];
+        let outputText = generation.text;
+        let extraMetadata = {};
+        if (output.llmOutput) {
+            let tokenUsage = output.llmOutput.tokenUsage;
+            extraMetadata = {
+                inputTokens: tokenUsage.promptTokens,
+                outputTokens: tokenUsage.completionTokens,
+            };
+        }
         if (outputText.length == 0) {
             // we are in the function calling regime.
-            let message = generations[generations.length - 1].message;
+            let message = generation.message;
             let function_call = message.additional_kwargs.function_call;
             if (function_call) {
                 outputText = JSON.stringify(function_call);
             }
         }
-        this.moveFromStackToChainSteps([outputText], runId, parentRunId);
+        this.moveFromStackToChainSteps([outputText], runId, parentRunId, extraMetadata);
     }
     async handleRetrieverStart(retriever, query, runId, parentRunId, tags, metadata, name) {
         console.log("Starting Retriever...");
