@@ -3,7 +3,7 @@ This is the nebuly SDK for Node JS. Currently, the node JS is a preview features
 
 ## Installation
 ```bash
-npm install @nebuly/sdk-js
+npm install @nebuly-ai/nebuly-js-sdk
 ```
 
 ## Usage
