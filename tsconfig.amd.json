@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+        "module": "amd",
+        "target": "es2019",
+        "declaration": true,
+        "outDir": "./dist/amd"
+    },
+    "include": [
+        "src/**/*"
+    ]
+}
