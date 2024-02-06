@@ -1,12 +1,16 @@
 {
-  "name": "nebuly-js-sdk",
+  "name": "@nebuly-ai/nebuly-js-sdk",
   "version": "0.1.0",
   "description": "Nebuly-AI server side SDK for JavaScript",
   "main": "dist/index.js",
-  "type": "module",
+  "types": "dist/index.d.ts",
   "files": [
     "/dist"
   ],
+  "scripts": {
+    "build": "tsc && tsc -p tsconfig.amd.json && tsc -p tsconfig.esm.json",
+    "publish": "npm run build && npm publish --access public"
+  },
   "dependencies": {
     "@langchain/core": "^0.1.21"
   }
