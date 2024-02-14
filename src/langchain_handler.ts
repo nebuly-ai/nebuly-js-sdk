@@ -87,6 +87,8 @@ export class NebulyCallbackHandler extends BaseCallbackHandler {
     this.end = new Date();
     if ("input" in _output && ("answer" in _output || "output" in _output)) {
       this.setInputAnswer(_output.input, _output.answer || _output.output);
+    } else if ("answer" in _output || "output" in _output) {
+      this.setInputAnswer(undefined, _output.answer || _output.output);
     }
     if ("chat_history" in _output) {
       let chatHistory = _output.chat_history as Array<HumanMessage | AIMessage>;
@@ -126,6 +128,9 @@ export class NebulyCallbackHandler extends BaseCallbackHandler {
   async handleLLMEnd(output: LLMResult, runId: string, parentRunId?: string, tags?: string[]): Promise<any> {
     const generation = output.generations[0][output.generations[0].length - 1];
     let outputText = generation.text;
+    if (this.answer.length == 0) {  // this is needed when only the LLM is called
+      this.answer = outputText;
+    }
     let extraMetadata: Record<string, unknown> = {};
     if (output.llmOutput) {
       let tokenUsage = output.llmOutput.tokenUsage as Record<string, number>;
@@ -182,6 +187,9 @@ export class NebulyCallbackHandler extends BaseCallbackHandler {
     let assistantHistory = messages[0].filter(m => m instanceof AIMessage).map(m => m.content.toString());    
     let newStep = new ChainStep(runId, ChainStepName.LLM);
     newStep.query = messages[0][messages[0].length - 1].content.toString();
+    if (this.input.length == 0) {
+      this.input = newStep.query;
+    }
     newStep.metadata = { model: modelName, userHistory: userHistory, assistantHistory: assistantHistory };
     this.addChainStepToStack(newStep, runId, parentRunId);
   }
