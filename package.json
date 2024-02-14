@@ -8,7 +8,7 @@
     "/dist"
   ],
   "scripts": {
-    "build": "tsc && tsc -p tsconfig.amd.json && tsc -p tsconfig.esm.json",
+    "build": "tsc",
     "publish": "npm run build && npm publish --access public"
   },
   "dependencies": {
