@@ -1,4 +1,10 @@
-import { ChainStep } from './base.js';
+import { ChainStep, FeedbackAction, FeedbackActionMetadata } from './base.js';
+
+
+export const BASE_ENDPOINT_URL = process.env.NEBULY_ENDPOINT_URL || 'https://backend.nebuly.com/event-ingestion';
+export const INTERACTION_ENDPOINT_URL = `${BASE_ENDPOINT_URL}/api/v1/events/trace_interaction`;
+export const FEEDBACK_ENDPOINT_URL = `${BASE_ENDPOINT_URL}/api/v1/events/feedback`;
+
 
 export async function sendDataToEndpoint(url: string, data: Record<string, unknown>, token: string): Promise<Record<string, unknown> | undefined> {
     try {
@@ -20,9 +26,10 @@ export async function sendDataToEndpoint(url: string, data: Record<string, unkno
     } catch (error) {
         console.error('Error:', error);
     }
+    return;
 }
 
-export function prepareDataForEndpoint(
+export function prepareDataForInterctionEndpoint(
     input: string, 
     answer: string, 
     chainSteps: ChainStep[],
@@ -58,4 +65,15 @@ export function prepareDataForEndpoint(
         anonymize: anonymize || false,
     };
     return data;
+}
+
+
+export function prepareDataForFeedbackEndpoint(
+    feedbackAction: FeedbackAction,
+    metadata: FeedbackActionMetadata,
+): Record<string, unknown> {
+    return {
+        "action": feedbackAction,
+        "metadata": metadata,
+    };
 }

@@ -27,7 +27,7 @@ export class ChainStep {
             const output = this.response ? this.response[0] : "";
             const inputTokens = this.metadata.inputTokens as number || 0;
             const outputTokens = this.metadata.outputTokens as number || 0;
-            let history: string[][] = [];
+            const history: string[][] = [];
             const userHistory = this.metadata.userHistory as string[] || [];
             const assistantHistory = this.metadata.assistantHistory as string[] || [];
             const length = Math.min(userHistory.length, assistantHistory.length);
@@ -66,3 +66,70 @@ export class ChainStep {
         }
     }
 }
+
+export class RAGSource {
+    input: string;
+    outputs: string[];
+
+    constructor(input: string, outputs: string[]) {
+        this.input = input;
+        this.outputs = outputs;
+    }
+
+    toChainStep(): ChainStep {
+        const chain = new ChainStep("RAG", ChainStepName.Retriever);
+        chain.query = this.input;
+        chain.response = this.outputs;
+        return chain;
+    }
+}
+
+export interface FeedbackActionMetadata {
+    input?: string | null;
+    output?: string | null;
+    end_user?: string;
+    end_user_group_profile?: string | null;
+    timestamp?: Date;
+    anonymize?: boolean;
+}
+
+interface ThumbsUpFeedbackAction {
+    slug: "thumbs_up";
+    text?: string | null;
+}
+
+interface ThumbsDownFeedbackAction {
+    slug: "thumbs_down";
+    text?: string | null;
+}
+
+interface CopyInputFeedbackAction {
+    slug: "copy_input";
+    text: string;
+}
+
+interface CopyOutputFeedbackAction {
+    slug: "copy_output";
+    text: string;
+}
+
+interface PasteFeedbackAction {
+    slug: "paste";
+    text: string;
+}
+
+interface UserCommentAction {
+    slug: "comment";
+    text: string;
+}
+
+interface RegenerateAction {
+    slug: "regenerate";
+}
+
+interface EditAction {
+    slug: "edit";
+    text: string;
+}
+
+export type FeedbackAction = ThumbsUpFeedbackAction | ThumbsDownFeedbackAction | CopyInputFeedbackAction | CopyOutputFeedbackAction | PasteFeedbackAction | UserCommentAction | RegenerateAction | EditAction

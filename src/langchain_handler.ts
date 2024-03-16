@@ -11,13 +11,10 @@ import { BaseMessage } from "@langchain/core/messages";
 import { ChatGeneration } from "@langchain/core/outputs";
 
 import { ChainStep, ChainStepName } from "./base.js";
-import { prepareDataForEndpoint, sendDataToEndpoint } from "./endpoint_connection.js";
+import { prepareDataForInterctionEndpoint, sendDataToEndpoint, INTERACTION_ENDPOINT_URL } from "./endpoint_connection.js";
 
 
 const TOOL_ID = "tool";
-const ENDPOINT_URL = 
-process.env.NEBULY_ENDPOINT_URL || "https://backend.nebuly.com/event-ingestion/api/v1/events/trace_interaction";
-
 
 export class NebulyCallbackHandler extends BaseCallbackHandler {
   name: string = "NebulyCallbackHandler";
@@ -183,7 +180,7 @@ export class NebulyCallbackHandler extends BaseCallbackHandler {
   }
 
   async sendData(): Promise<Record<string, unknown> | undefined>{
-    const data = prepareDataForEndpoint(
+    const data = prepareDataForInterctionEndpoint(
       this.input,
       this.answer,
       this.chain_steps,
@@ -199,6 +196,6 @@ export class NebulyCallbackHandler extends BaseCallbackHandler {
       console.error("No API key provided.");
       return;
     }
-    return await sendDataToEndpoint(ENDPOINT_URL, data, apiKey);
+    return await sendDataToEndpoint(INTERACTION_ENDPOINT_URL, data, apiKey);
   }
 }
