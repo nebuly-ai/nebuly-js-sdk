@@ -35,11 +35,11 @@ export function prepareDataForEndpoint(
     anonymize?: boolean
 ): Record<string, unknown> {
     // convert chain_steps to spans
-    let traces = chainSteps.map((step) => {
+    const traces = chainSteps.map((step) => {
         return step.toTrace();
     });
 
-    let history: string[][] = [];
+    const history: string[][] = [];
     const length = Math.min(user_history.length, assistant_history.length);
     for (let i = 0; i < length; i++) {
         history.push([user_history[i], assistant_history[i]]);

@@ -16,3 +16,13 @@ handler.sendData();
 ```
 
 The handler accepts as input parameters the endUser and nebuly's apiKey. If the apiKey is not given, the handler will use the default apiKey from the environment variable `NEBULY_API_KEY`. The endUser parameter should contain a unique identifier for the end-user. We usually suggest to use the hashed version of the username or email as unique identifier for the user.
+
+## Development
+To initialize the development environment you can use the following command:
+```bash
+tsc --init
+```
+To continuously compile the typescript code:
+```bash
+tsc -w
+```

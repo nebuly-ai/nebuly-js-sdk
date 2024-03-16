@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Serialized } from "@langchain/core/load/serializable";
 import { BaseCallbackHandler } from "@langchain/core/callbacks/base";
 import { HumanMessage, AIMessage } from "@langchain/core/messages";
-import { AgentAction, AgentFinish } from "@langchain/core/agents";
+import { AgentAction } from "@langchain/core/agents";
 import { ChainValues } from "@langchain/core/utils/types";
 import { LLMResult } from "@langchain/core/outputs";
 import { DocumentInterface } from "@langchain/core/documents";
@@ -67,7 +67,7 @@ export class NebulyCallbackHandler extends BaseCallbackHandler {
       return;
     }
     const key = parentRunId ? (runId + parentRunId) : runId;
-    let pendingStep = this.stack[key].pop();
+    const pendingStep = this.stack[key].pop();
     if (pendingStep) {
       if (extraMetadata) {
         pendingStep.metadata = { ...pendingStep.metadata, ...extraMetadata };
@@ -77,7 +77,7 @@ export class NebulyCallbackHandler extends BaseCallbackHandler {
     }
   }
 
-  async handleChainStart(chain: Serialized) {
+  async handleChainStart(chain: Serialized) { // eslint-disable-line 
     if (! this.start) {
       this.start = new Date();
     }
@@ -89,9 +89,9 @@ export class NebulyCallbackHandler extends BaseCallbackHandler {
       this.setInputAnswer(_output.input, _output.answer || _output.output);
     }
     if ("chat_history" in _output) {
-      let chatHistory = _output.chat_history as Array<HumanMessage | AIMessage>;
-      let userHistory = chatHistory.filter(h => h instanceof HumanMessage).map(h => h.content as string);
-      let assistantHistory = chatHistory.filter(h => h instanceof AIMessage).map(h => h.content as string);
+      const chatHistory = _output.chat_history as Array<HumanMessage | AIMessage>;
+      const userHistory = chatHistory.filter(h => h instanceof HumanMessage).map(h => h.content as string);
+      const assistantHistory = chatHistory.filter(h => h instanceof AIMessage).map(h => h.content as string);
       this.userHistory = userHistory;
       this.assistantHistory = assistantHistory;
     }
@@ -99,7 +99,7 @@ export class NebulyCallbackHandler extends BaseCallbackHandler {
 
   async handleAgentAction(action: AgentAction) {
     const runId = uuidv4();
-    let newStep = new ChainStep(runId, ChainStepName.Tool);
+    const newStep = new ChainStep(runId, ChainStepName.Tool);
     newStep.query = JSON.stringify(action.toolInput);
     newStep.metadata = {
       toolName: action.tool,
@@ -113,22 +113,18 @@ export class NebulyCallbackHandler extends BaseCallbackHandler {
     this.moveFromStackToChainSteps([output], TOOL_ID);
   }
 
-  async handleText(text: string) {}
-
-  async handleAgentEnd(action: AgentFinish) {}
-
-  async handleLLMStart(llm: Serialized, prompts: string[], runId: string, parentRunId?: string, extraParams?: Record<string, unknown>, tags?: string[], metadata?: Record<string, unknown>, name?: string): Promise<any> {
+  async handleLLMStart(llm: Serialized, prompts: string[], runId: string, parentRunId?: string, extraParams?: Record<string, unknown>, tags?: string[], metadata?: Record<string, unknown>, name?: string) { // eslint-disable-line
     //console.log("Starting LLM...");
     //console.log(llm, prompts, runId, parentRunId, extraParams, tags, metadata, name);
     // let newStep = new ChainStep(runId, "LLM");
   }
 
-  async handleLLMEnd(output: LLMResult, runId: string, parentRunId?: string, tags?: string[]): Promise<any> {
+  async handleLLMEnd(output: LLMResult, runId: string, parentRunId?: string, tags?: string[]) { // eslint-disable-line
     const generation = output.generations[0][output.generations[0].length - 1];
     let outputText = generation.text;
     let extraMetadata: Record<string, unknown> = {};
     if (output.llmOutput) {
-      let tokenUsage = output.llmOutput.tokenUsage as Record<string, number>;
+      const tokenUsage = output.llmOutput.tokenUsage as Record<string, number>;
       extraMetadata = {
         inputTokens: tokenUsage.promptTokens,
         outputTokens: tokenUsage.completionTokens,
@@ -136,8 +132,8 @@ export class NebulyCallbackHandler extends BaseCallbackHandler {
     }
     if (outputText.length == 0) {
       // we are in the function calling regime.
-      let message = (generation as ChatGeneration).message;
-      let function_call = message.additional_kwargs.function_call;
+      const message = (generation as ChatGeneration).message;
+      const function_call = message.additional_kwargs.function_call;
       if (function_call) {
         outputText = JSON.stringify(function_call);
       }
@@ -145,8 +141,8 @@ export class NebulyCallbackHandler extends BaseCallbackHandler {
     this.moveFromStackToChainSteps([outputText], runId, parentRunId, extraMetadata);
   }
 
-  async handleRetrieverStart(retriever: Serialized, query: string, runId: string, parentRunId?: string, tags?: string[], metadata?: Record<string, unknown>, name?: string): Promise<any> {
-    let newStep = new ChainStep(runId, ChainStepName.Retriever);
+  async handleRetrieverStart(retriever: Serialized, query: string, runId: string, parentRunId?: string, tags?: string[], metadata?: Record<string, unknown>, name?: string) {
+    const newStep = new ChainStep(runId, ChainStepName.Retriever);
     newStep.query = query;
     newStep.metadata = {
       sourceClass: retriever.id[retriever.id.length - 1],
@@ -156,7 +152,7 @@ export class NebulyCallbackHandler extends BaseCallbackHandler {
     this.addChainStepToStack(newStep, runId, parentRunId);
   }
 
-  async handleRetrieverEnd(documents: DocumentInterface<Record<string, any>>[], runId: string, parentRunId?: string, tags?: string[]): Promise<any> {
+  async handleRetrieverEnd(documents: DocumentInterface<Record<string, unknown>>[], runId: string, parentRunId?: string, tags?: string[]) {  // eslint-disable-line
     const text = documents.map((doc) => doc.pageContent);
     this.moveFromStackToChainSteps(text, runId, parentRunId);
   }
@@ -167,10 +163,10 @@ export class NebulyCallbackHandler extends BaseCallbackHandler {
     runId: string,
     parentRunId?: string,
     extraParams?: Record<string, unknown>,
-    tags?: string[],
-    metadata?: Record<string, unknown>,
-    name?: string
-  ): Promise<any> {
+    tags?: string[],  // eslint-disable-line
+    metadata?: Record<string, unknown>,  // eslint-disable-line
+    name?: string  // eslint-disable-line
+  ) {
     let modelName = "unknown";
     if (extraParams && extraParams.invocation_params) {
       const modelRecord = extraParams.invocation_params as Record<string, unknown>;
@@ -178,9 +174,9 @@ export class NebulyCallbackHandler extends BaseCallbackHandler {
         modelName = modelRecord["model"] as string;
       }
     }
-    let userHistory = messages[0].filter(m => m instanceof HumanMessage).map(m => m.content.toString());
-    let assistantHistory = messages[0].filter(m => m instanceof AIMessage).map(m => m.content.toString());    
-    let newStep = new ChainStep(runId, ChainStepName.LLM);
+    const userHistory = messages[0].filter(m => m instanceof HumanMessage).map(m => m.content.toString());
+    const assistantHistory = messages[0].filter(m => m instanceof AIMessage).map(m => m.content.toString());    
+    const newStep = new ChainStep(runId, ChainStepName.LLM);
     newStep.query = messages[0][messages[0].length - 1].content.toString();
     newStep.metadata = { model: modelName, userHistory: userHistory, assistantHistory: assistantHistory };
     this.addChainStepToStack(newStep, runId, parentRunId);
