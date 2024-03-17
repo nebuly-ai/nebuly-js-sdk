@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import { v4 as uuidv4 } from 'uuid';
 
 import { Serialized } from "@langchain/core/load/serializable";
@@ -84,6 +86,10 @@ export class NebulyCallbackHandler extends BaseCallbackHandler {
     this.end = new Date();
     if ("input" in _output && ("answer" in _output || "output" in _output)) {
       this.setInputAnswer(_output.input, _output.answer || _output.output);
+    } else if ("answer" in _output || "output" in _output) {
+      this.setInputAnswer(undefined, _output.answer || _output.output);
+    } else if ("input" in _output && this.input.length == 0) {
+      this.setInputAnswer(_output.input);
     }
     if ("chat_history" in _output) {
       const chatHistory = _output.chat_history as Array<HumanMessage | AIMessage>;

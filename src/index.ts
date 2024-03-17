@@ -1,12 +1,4 @@
-let NebulyCallbackHandler;
+import { NebulySdk } from './client.js';
+import { NebulyCallbackHandler } from './langchain_handler.js';
 
-import('./langchain_handler.js')
-  .then(module => {
-    NebulyCallbackHandler = module.NebulyCallbackHandler;
-  })
-  .catch(e => {
-    console.error('Error loading NebulyCallbackHandler:', e);
-    NebulyCallbackHandler = null;
-  });
-
-export { NebulyCallbackHandler };
+export { NebulyCallbackHandler, NebulySdk };

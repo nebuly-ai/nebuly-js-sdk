@@ -1,7 +1,6 @@
 import { prepareDataForInterctionEndpoint, prepareDataForFeedbackEndpoint, sendDataToEndpoint, INTERACTION_ENDPOINT_URL, FEEDBACK_ENDPOINT_URL } from "./endpoint_connection.js";
 import { ChainStep, RAGSource, FeedbackAction, FeedbackActionMetadata, ChainStepName } from "./base.js";
 
-
 export class NebulySdk {
     constructor(private apiKey: string) { }
 
@@ -29,7 +28,7 @@ export class NebulySdk {
     }
 
     async sendOpenAIInteraction(
-        messages: Record<string, string | Record<string, string>>[],
+        messages: any[],  // eslint-disable-line @typescript-eslint/no-explicit-any
         modelOutput: string,
         model: string,
         timeStart: Date,
