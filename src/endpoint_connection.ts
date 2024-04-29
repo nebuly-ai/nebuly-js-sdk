@@ -66,10 +66,14 @@ export function prepareDataForInterctionEndpoint(
     };
 
     // Set input, output and history for chat models that are not inside chains
-    if (traces.length == 1 && input == "" && answer == "") {
-        data.interaction.input = String(traces[0]["input"])
-        data.interaction.output = String(traces[0]["output"])
-        data.interaction.history = traces[0]["history"]
+    if (chainSteps.length == 1) {
+        const step = chainSteps[0]
+        if (step.name == "LLM" && traces.length == 1 && input == "" && answer == "") {
+            const trace = traces[0]
+            data.interaction.input = String(trace["input"])
+            data.interaction.output = String(trace["output"])
+            data.interaction.history = trace["history"] 
+        }
     }
 
     return data;
