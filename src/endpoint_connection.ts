@@ -64,6 +64,14 @@ export function prepareDataForInterctionEndpoint(
         traces: traces,
         anonymize: anonymize || false,
     };
+
+    // Set input, output and history for chat models that are not inside chains
+    if (traces.length == 1 && input == "" && answer == "") {
+        data.interaction.input = String(traces[0]["input"])
+        data.interaction.output = String(traces[0]["output"])
+        data.interaction.history = traces[0]["history"]
+    }
+
     return data;
 }
 
