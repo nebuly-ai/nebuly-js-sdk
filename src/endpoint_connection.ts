@@ -72,7 +72,7 @@ export function prepareDataForInterctionEndpoint(
             const trace = traces[0]
             data.interaction.input = String(trace["input"])
             data.interaction.output = String(trace["output"])
-            data.interaction.history = trace["history"] 
+            data.interaction.history = trace["history"] as string[][]
         }
     }
 

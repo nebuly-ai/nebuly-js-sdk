@@ -177,6 +177,9 @@ export class NebulyCallbackHandler extends BaseCallbackHandler {
         modelName = modelRecord["model"] as string;
       }
     }
+    if (metadata && "tags" in metadata) {
+      this.tags = metadata["tags"] as Record<string, string>;
+    }
     const userHistory = messages[0].filter(m => m instanceof HumanMessage).map(m => m.content.toString());
     const assistantHistory = messages[0].filter(m => m instanceof AIMessage).map(m => m.content.toString());    
     const newStep = new ChainStep(runId, ChainStepName.LLM);
