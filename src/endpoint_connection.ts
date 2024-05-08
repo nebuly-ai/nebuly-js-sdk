@@ -72,12 +72,12 @@ export function prepareDataForInterctionEndpoint(
                 const llmStep = llmSteps[i];
                 const stepInput = llmStep.query || "";
                 const stepOutputs = llmStep.response || [];
-                const assistantHistory = llmStep.metadata.assistantHistory as string[];
-                const userHistory = llmStep.metadata.userHistory as string[];
                 if (stepOutputs.length == 0) {
                     continue;
                 }
                 const stepOutput = stepOutputs[0];
+                const assistantHistory = llmStep.metadata.assistantHistory as string[];
+                const userHistory = llmStep.metadata.userHistory as string[];
                 
                 if (input == "") {
                     // Take the input from the first LLM step if the input is empty
