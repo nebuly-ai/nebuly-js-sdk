@@ -76,15 +76,17 @@ export function prepareDataForInterctionEndpoint(
                     continue;
                 }
                 const stepOutput = stepOutputs[0];
+                const assistantHistory = llmStep.metadata.assistantHistory as string[];
+                const userHistory = llmStep.metadata.userHistory as string[];
                 if (input == "" && answer == "") {
                     // if both input and answer are empty, use the last LLM step
                     data.interaction.input = stepInput;
                     data.interaction.output = stepOutput;
-                    data.interaction.history = (llmStep.metadata.assistantHistory as string[]).map((assistant, i) => [(llmStep.metadata.userHistory as string[])[i], assistant]);
+                    data.interaction.history = assistantHistory.map((assistant, i) => [userHistory[i], assistant]);
                 } else if (input == "" && answer == stepOutput) {
                     // if input is empty, use the first LLM step that has the same output as the answer
                     data.interaction.input = stepInput;
-                    data.interaction.history = (llmStep.metadata.assistantHistory as string[]).map((assistant, i) => [(llmStep.metadata.userHistory as string[])[i], assistant]);
+                    data.interaction.history = assistantHistory.map((assistant, i) => [userHistory[i], assistant]);
                     break;
                 } else if (answer == "" && input == stepInput) {
                     // if answer is empty, use the first LLM step that has the same input as the input
