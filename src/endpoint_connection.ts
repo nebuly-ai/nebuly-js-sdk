@@ -80,11 +80,11 @@ export function prepareDataForInterctionEndpoint(
                     // if both input and answer are empty, use the last LLM step
                     data.interaction.input = stepInput;
                     data.interaction.output = stepOutput;
-                    data.interaction.history = llmStep.metadata.assistantHistory.map((assistant, i) => [llmStep.metadata.userHistory[i], assistant]);
+                    data.interaction.history = (llmStep.metadata.assistantHistory as string[]).map((assistant, i) => [(llmStep.metadata.userHistory as string[])[i], assistant]);
                 } else if (input == "" && answer == stepOutput) {
                     // if input is empty, use the first LLM step that has the same output as the answer
                     data.interaction.input = stepInput;
-                    data.interaction.history = llmStep.metadata.assistantHistory.map((assistant, i) => [llmStep.metadata.userHistory[i], assistant]);
+                    data.interaction.history = (llmStep.metadata.assistantHistory as string[]).map((assistant, i) => [(llmStep.metadata.userHistory as string[])[i], assistant]);
                     break;
                 } else if (answer == "" && input == stepInput) {
                     // if answer is empty, use the first LLM step that has the same input as the input
