@@ -65,7 +65,7 @@ export function prepareDataForInterctionEndpoint(
         anonymize: anonymize || false,
     };
 
-    if (chainSteps.length >= 1 && input == "" || answer == "") {
+    if (chainSteps.length >= 1 && (input == "" || answer == "")) {
         const llmSteps = chainSteps.filter((step) => step.name == "LLM");
         if (llmSteps.length > 0) {
             for (let i = 0; i < llmSteps.length; i++) {
@@ -78,21 +78,20 @@ export function prepareDataForInterctionEndpoint(
                 const stepOutput = stepOutputs[0];
                 const assistantHistory = llmStep.metadata.assistantHistory as string[];
                 const userHistory = llmStep.metadata.userHistory as string[];
-                if (input == "" && answer == "") {
-                    // if both input and answer are empty, use the last LLM step
-                    data.interaction.input = stepInput;
-                    data.interaction.output = stepOutput;
-                    data.interaction.history = assistantHistory.map((assistant, i) => [userHistory[i], assistant]);
-                } else if (input == "" && answer == stepOutput) {
-                    // if input is empty, use the first LLM step that has the same output as the answer
-                    data.interaction.input = stepInput;
-                    data.interaction.history = assistantHistory.map((assistant, i) => [userHistory[i], assistant]);
-                    break;
-                } else if (answer == "" && input == stepInput) {
-                    // if answer is empty, use the first LLM step that has the same input as the input
-                    data.interaction.output = stepOutput;
-                    break;
+                
+                if (input == "") {
+                    // Take the input from the first LLM step if the input is empty
+                    if (i == 0) {
+                        data.interaction.input = stepInput;
+                    }
+                    if (assistantHistory.length > 0 && userHistory.length > 0) {
+                        data.interaction.history = assistantHistory.map((assistant, i) => [userHistory[i], assistant]);
+                    }
                 }
+                if (answer == "") {
+                    // Take the output from the last LLM step if the output is empty
+                    data.interaction.output = stepOutput;
+                }    
             }
         }
     }
