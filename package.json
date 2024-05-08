@@ -1,6 +1,6 @@
 {
   "name": "@nebuly-ai/nebuly-js-sdk",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Nebuly-AI server side SDK for JavaScript",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

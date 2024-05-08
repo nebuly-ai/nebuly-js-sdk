@@ -65,14 +65,35 @@ export function prepareDataForInterctionEndpoint(
         anonymize: anonymize || false,
     };
 
-    // Set input, output and history for chat models that are not inside chains
-    if (chainSteps.length == 1) {
-        const step = chainSteps[0]
-        if (step.name == "LLM" && traces.length == 1 && input == "" && answer == "") {
-            const trace = traces[0]
-            data.interaction.input = String(trace["input"])
-            data.interaction.output = String(trace["output"])
-            data.interaction.history = trace["history"] as string[][]
+    if (chainSteps.length >= 1 && input == "" || answer == "") {
+        const llmSteps = chainSteps.filter((step) => step.name == "LLM");
+        if (llmSteps.length > 0) {
+            for (let i = 0; i < llmSteps.length; i++) {
+                const llmStep = llmSteps[i];
+                const stepInput = llmStep.query || "";
+                const stepOutputs = llmStep.response || [];
+                if (stepOutputs.length == 0) {
+                    continue;
+                }
+                const stepOutput = stepOutputs[0];
+                const assistantHistory = llmStep.metadata.assistantHistory as string[];
+                const userHistory = llmStep.metadata.userHistory as string[];
+                if (input == "" && answer == "") {
+                    // if both input and answer are empty, use the last LLM step
+                    data.interaction.input = stepInput;
+                    data.interaction.output = stepOutput;
+                    data.interaction.history = assistantHistory.map((assistant, i) => [userHistory[i], assistant]);
+                } else if (input == "" && answer == stepOutput) {
+                    // if input is empty, use the first LLM step that has the same output as the answer
+                    data.interaction.input = stepInput;
+                    data.interaction.history = assistantHistory.map((assistant, i) => [userHistory[i], assistant]);
+                    break;
+                } else if (answer == "" && input == stepInput) {
+                    // if answer is empty, use the first LLM step that has the same input as the input
+                    data.interaction.output = stepOutput;
+                    break;
+                }
+            }
         }
     }
 
