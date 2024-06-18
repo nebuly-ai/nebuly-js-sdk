@@ -4,7 +4,7 @@ import { ChainStep, FeedbackAction, FeedbackActionMetadata } from './base.js';
 export const BASE_ENDPOINT_URL = process.env.NEBULY_ENDPOINT_URL || 'https://backend.nebuly.com';
 export const INTERACTION_ENDPOINT_URL = `${BASE_ENDPOINT_URL}/event-ingestion/api/v1/events/trace_interaction`;
 export const FEEDBACK_ENDPOINT_URL = `${BASE_ENDPOINT_URL}/event-ingestion/api/v1/events/feedback`;
-export const EXTERNAL_ENDPOINT_URL = `${BASE_ENDPOINT_URL}/event-ingestion/api/external`;
+export const EXTERNAL_ENDPOINT_URL = `${BASE_ENDPOINT_URL}/api/external`;
 
 
 export async function sendDataToEndpoint(url: string, data: Record<string, unknown>, token: string): Promise<Record<string, unknown> | undefined> {

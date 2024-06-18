@@ -95,7 +95,7 @@ export class NebulySdk {
                     offset: offset
                 },
                 headers: {
-                    "x-api-key": this.apiKey,
+                    "Authorization": `Bearer ${this.apiKey}`,
                 }
             }
         );
@@ -118,7 +118,7 @@ export class NebulySdk {
         const { data, error } = await client.POST(
             "/get-interactions",
             {
-                requestBody: {
+                body: {
                     time_range: time_range,
                     filters: filters,
                     group_by: group_by,
@@ -126,7 +126,7 @@ export class NebulySdk {
                     offset: offset
                 },
                 headers: {
-                    "x-api-key": this.apiKey,
+                    "Authorization": `Bearer ${this.apiKey}`,
                 }
             }
         );
@@ -149,7 +149,7 @@ export class NebulySdk {
         const { data, error } = await client.POST(
             "/get-interaction-time-series",
             {
-                requestBody: {
+                body: {
                     time_range: time_range,
                     filters: filters,
                     group_by: group_by,
@@ -157,7 +157,7 @@ export class NebulySdk {
                     offset: offset
                 },
                 headers: {
-                    "x-api-key": this.apiKey,
+                    "Authorization": `Bearer ${this.apiKey}`,
                 }
             }
         );
@@ -172,10 +172,13 @@ export class NebulySdk {
     async getInteractionDetails(interaction_id: string): Promise<getInteractionAggregatesResponse> {
         const client = createClient<paths>({ baseUrl: EXTERNAL_ENDPOINT_URL });
         const { data, error } = await client.GET(
-            `/export/interactions/detail/${interaction_id}`,
+            `/export/interactions/detail/{interaction_id}`,
             {
+                params: {
+                    path: { interaction_id: interaction_id },
+                  },
                 headers: {
-                    "x-api-key": this.apiKey,
+                    "Authorization": `Bearer ${this.apiKey}`,
                 }
             }
         );
