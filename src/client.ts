@@ -76,7 +76,7 @@ export class NebulySdk {
         );
     }
 
-    async getInteractionAggregations({
+    async getInteractionAggregates({
         time_range,
         filters,
         group_by,
