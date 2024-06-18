@@ -10,7 +10,7 @@ import { ChatOpenAI } from "@langchain/openai";
 import { NebulyCallbackHandler} from "@nebuly-ai/nebuly-js-sdk";
 
 
-let myCallbackHandler = new NebulyCallbackHandler('<YOUR_USER_ID>', '<NEBULY_API_KEY>')
+const myCallbackHandler = new NebulyCallbackHandler('<YOUR_USER_ID>', '<NEBULY_API_KEY>')
 
 const loader = new CheerioWebBaseLoader(
   "https://docs.smith.langchain.com/overview"
@@ -56,4 +56,5 @@ const result = await retrievalChain.invoke({
   callbacks: [myCallbackHandler],
 }
 );
+console.log(result)
 await myCallbackHandler.sendData()

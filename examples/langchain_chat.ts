@@ -1,7 +1,7 @@
 import { ChatOpenAI } from "@langchain/openai";
 import { NebulyCallbackHandler} from "@nebuly-ai/nebuly-js-sdk";
 
-let nebulyCallbackHandler = new NebulyCallbackHandler('<YOUR_USER_ID>', '<NEBULY_API_KEY>')
+const nebulyCallbackHandler = new NebulyCallbackHandler('<YOUR_USER_ID>', '<NEBULY_API_KEY>')
 const chatModel = new ChatOpenAI({
     openAIApiKey: "<YOUR_OPENAI_API_KEY>"
 });
@@ -11,4 +11,5 @@ const response = await chatModel.invoke(
         callbacks: [nebulyCallbackHandler]
     }
 );
+console.log(response)
 await nebulyCallbackHandler.sendData()

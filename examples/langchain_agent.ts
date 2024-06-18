@@ -13,7 +13,7 @@ import { createRetrieverTool } from "langchain/tools/retriever";
 import { NebulyCallbackHandler} from "@nebuly-ai/nebuly-js-sdk";
 
 
-let myCallbackHandler = new NebulyCallbackHandler('<YOUR_USER_ID>', '<NEBULY_API_KEY>')
+const myCallbackHandler = new NebulyCallbackHandler('<YOUR_USER_ID>', '<NEBULY_API_KEY>')
 
 const loader = new CheerioWebBaseLoader(
   "https://docs.smith.langchain.com/overview"
@@ -74,4 +74,5 @@ const agentResult = await agentExecutor.invoke(
   }
 
 );
+console.log(agentResult);
 await myCallbackHandler.sendData();
