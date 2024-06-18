@@ -4,13 +4,13 @@ export type TimeRange = components["schemas"]["TimeRange"];
 export type Filter = (components["schemas"]["FilterUserIntent"] | components["schemas"]["FilterNegativeUserIntent"] | components["schemas"]["FilterKeyword"] | components["schemas"]["FilterUserFeedback"] | components["schemas"]["FilterTag"] | components["schemas"]["FilterTypeOfProblem"] | components["schemas"]["FilterTopic"] | components["schemas"]["FilterUser"] | components["schemas"]["FilterUserQuery"] | components["schemas"]["FilterDataSource"] | components["schemas"]["FilterLanguage"] | components["schemas"]["FilterPii"]);
 export type GroupByFilter = components["schemas"]["GroupByUserIntent"] | components["schemas"]["GroupByNegativeUserIntent"] | components["schemas"]["GroupByKeyword"] | components["schemas"]["GroupByUserFeedback"] | components["schemas"]["GroupByTag"] | components["schemas"]["GroupByTypeOfProblem"] | components["schemas"]["GroupByTopic"] | components["schemas"]["GroupByUser"] | null;
 
-export type getInteractionAggregatesRequest = paths["/get-interaction-aggregates"]["post"]["requestBody"]["content"]["application/json"];
-export type getInteractionAggregatesResponse = paths["/get-interaction-aggregates"]["post"]["responses"]["200"]["content"]["application/json"];
+export type GetInteractionAggregatesRequest = paths["/get-interaction-aggregates"]["post"]["requestBody"]["content"]["application/json"];
+export type GetInteractionAggregatesResponse = paths["/get-interaction-aggregates"]["post"]["responses"]["200"]["content"]["application/json"];
 
-export type getInteractionsRequest = paths["/get-interactions"]["post"]["requestBody"]["content"]["application/json"];
-export type getInteractionsResponse = paths["/get-interactions"]["post"]["responses"]["200"]["content"]["application/json"];
+export type GetInteractionsRequest = paths["/get-interactions"]["post"]["requestBody"]["content"]["application/json"];
+export type GetInteractionsResponse = paths["/get-interactions"]["post"]["responses"]["200"]["content"]["application/json"];
 
-export type getInteractionTimeSeriesRequest = paths["/get-interaction-time-series"]["post"]["requestBody"]["content"]["application/json"];
-export type getInteractionTimeSeriesResponse = paths["/get-interaction-time-series"]["post"]["responses"]["200"]["content"]["application/json"];
+export type GetInteractionTimeSeriesRequest = paths["/get-interaction-time-series"]["post"]["requestBody"]["content"]["application/json"];
+export type GetInteractionTimeSeriesResponse = paths["/get-interaction-time-series"]["post"]["responses"]["200"]["content"]["application/json"];
 
-export type getInteractionDetailsResponse = paths["/export/interactions/detail/{interaction_id}"]["get"]["responses"]["200"]["content"]["application/json"];
+export type GetInteractionDetailsResponse = paths["/export/interactions/detail/{interaction_id}"]["get"]["responses"]["200"]["content"]["application/json"];

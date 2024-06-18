@@ -1,13 +1,15 @@
-import { prepareDataForInterctionEndpoint, prepareDataForFeedbackEndpoint, sendDataToEndpoint, INTERACTION_ENDPOINT_URL, FEEDBACK_ENDPOINT_URL, EXTERNAL_ENDPOINT_URL } from "./endpoint_connection.js";
-import { ChainStep, RAGSource, FeedbackAction, FeedbackActionMetadata, ChainStepName } from "./base.js";
+import { prepareDataForInterctionEndpoint, prepareDataForFeedbackEndpoint, sendDataToEndpoint, INTERACTION_ENDPOINT_URL, FEEDBACK_ENDPOINT_URL, EXTERNAL_ENDPOINT_URL } from "./endpoint_connection";
+import { ChainStep, RAGSource, FeedbackAction, FeedbackActionMetadata, ChainStepName } from "./base";
 import createClient from "openapi-fetch";
 import type { paths } from "./generated/schemas"; 
-import { getInteractionAggregatesRequest, getInteractionAggregatesResponse } from "./endpoint_types.js";
+import { GetInteractionAggregatesRequest, GetInteractionAggregatesResponse } from "./endpoint_types";
 
 export class NebulySdk {
+    client: ReturnType<typeof createClient>;
 
     constructor(private apiKey: string) { 
         this.apiKey = apiKey;
+        this.client = createClient<paths>({ baseUrl: EXTERNAL_ENDPOINT_URL });
     }
 
     async sendFeedbackAction(action: FeedbackAction, metadata?: FeedbackActionMetadata): Promise<Record<string, unknown> | undefined> {
@@ -82,9 +84,8 @@ export class NebulySdk {
         group_by,
         limit,
         offset
-    }: getInteractionAggregatesRequest): Promise<getInteractionAggregatesResponse> {
-        const client = createClient<paths>({ baseUrl: EXTERNAL_ENDPOINT_URL });
-        const { data, error } = await client.POST(
+    }: GetInteractionAggregatesRequest): Promise<GetInteractionAggregatesResponse> {
+        const { data, error } = await this.client.POST(
             "/get-interaction-aggregates",
             {
                 requestBody: {
@@ -113,9 +114,8 @@ export class NebulySdk {
         group_by,
         limit,
         offset
-    }: getInteractionAggregatesRequest): Promise<getInteractionAggregatesResponse> {
-        const client = createClient<paths>({ baseUrl: EXTERNAL_ENDPOINT_URL });
-        const { data, error } = await client.POST(
+    }: GetInteractionAggregatesRequest): Promise<GetInteractionAggregatesResponse> {
+        const { data, error } = await this.client.POST(
             "/get-interactions",
             {
                 body: {
@@ -144,9 +144,8 @@ export class NebulySdk {
         group_by,
         limit,
         offset
-    }: getInteractionAggregatesRequest): Promise<getInteractionAggregatesResponse> {
-        const client = createClient<paths>({ baseUrl: EXTERNAL_ENDPOINT_URL });
-        const { data, error } = await client.POST(
+    }: GetInteractionAggregatesRequest): Promise<GetInteractionAggregatesResponse> {
+        const { data, error } = await this.client.POST(
             "/get-interaction-time-series",
             {
                 body: {
@@ -169,9 +168,8 @@ export class NebulySdk {
         return data;
     }
 
-    async getInteractionDetails(interaction_id: string): Promise<getInteractionAggregatesResponse> {
-        const client = createClient<paths>({ baseUrl: EXTERNAL_ENDPOINT_URL });
-        const { data, error } = await client.GET(
+    async getInteractionDetails(interaction_id: string): Promise<GetInteractionAggregatesResponse> {
+        const { data, error } = await this.client.GET(
             `/export/interactions/detail/{interaction_id}`,
             {
                 params: {
