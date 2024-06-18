@@ -1,8 +1,14 @@
-import { prepareDataForInterctionEndpoint, prepareDataForFeedbackEndpoint, sendDataToEndpoint, INTERACTION_ENDPOINT_URL, FEEDBACK_ENDPOINT_URL } from "./endpoint_connection.js";
+import { prepareDataForInterctionEndpoint, prepareDataForFeedbackEndpoint, sendDataToEndpoint, INTERACTION_ENDPOINT_URL, FEEDBACK_ENDPOINT_URL, EXTERNAL_ENDPOINT_URL } from "./endpoint_connection.js";
 import { ChainStep, RAGSource, FeedbackAction, FeedbackActionMetadata, ChainStepName } from "./base.js";
+import createClient from "openapi-fetch";
+import type { paths } from "./generated/schemas"; 
+import { getInteractionAggregatesRequest, getInteractionAggregatesResponse } from "./endpoint_types.js";
 
 export class NebulySdk {
-    constructor(private apiKey: string) { }
+
+    constructor(private apiKey: string) { 
+        this.apiKey = apiKey;
+    }
 
     async sendFeedbackAction(action: FeedbackAction, metadata?: FeedbackActionMetadata): Promise<Record<string, unknown> | undefined> {
         metadata = Object.assign({ timestamp: new Date(), anonymize: true }, metadata);
@@ -68,5 +74,116 @@ export class NebulySdk {
             tags,
             anonymize
         );
+    }
+
+    async getInteractionAggregations({
+        time_range,
+        filters,
+        group_by,
+        limit,
+        offset
+    }: getInteractionAggregatesRequest): Promise<getInteractionAggregatesResponse> {
+        const client = createClient<paths>({ baseUrl: EXTERNAL_ENDPOINT_URL });
+        const { data, error } = await client.POST(
+            "/get-interaction-aggregates",
+            {
+                requestBody: {
+                    time_range: time_range,
+                    filters: filters,
+                    group_by: group_by,
+                    limit: limit,
+                    offset: offset
+                },
+                headers: {
+                    "x-api-key": this.apiKey,
+                }
+            }
+        );
+        
+        if (error) {
+            console.error('Error:', error);
+        }
+
+        return data;
+    }
+
+    async getInteractions({
+        time_range,
+        filters,
+        group_by,
+        limit,
+        offset
+    }: getInteractionAggregatesRequest): Promise<getInteractionAggregatesResponse> {
+        const client = createClient<paths>({ baseUrl: EXTERNAL_ENDPOINT_URL });
+        const { data, error } = await client.POST(
+            "/get-interactions",
+            {
+                requestBody: {
+                    time_range: time_range,
+                    filters: filters,
+                    group_by: group_by,
+                    limit: limit,
+                    offset: offset
+                },
+                headers: {
+                    "x-api-key": this.apiKey,
+                }
+            }
+        );
+        
+        if (error) {
+            console.error('Error:', error);
+        }
+
+        return data;
+    }
+
+    async getInteractionTimeSeries({
+        time_range,
+        filters,
+        group_by,
+        limit,
+        offset
+    }: getInteractionAggregatesRequest): Promise<getInteractionAggregatesResponse> {
+        const client = createClient<paths>({ baseUrl: EXTERNAL_ENDPOINT_URL });
+        const { data, error } = await client.POST(
+            "/get-interaction-time-series",
+            {
+                requestBody: {
+                    time_range: time_range,
+                    filters: filters,
+                    group_by: group_by,
+                    limit: limit,
+                    offset: offset
+                },
+                headers: {
+                    "x-api-key": this.apiKey,
+                }
+            }
+        );
+        
+        if (error) {
+            console.error('Error:', error);
+        }
+
+        return data;
+    }
+
+    async getInteractionDetails(interaction_id: string): Promise<getInteractionAggregatesResponse> {
+        const client = createClient<paths>({ baseUrl: EXTERNAL_ENDPOINT_URL });
+        const { data, error } = await client.GET(
+            `/export/interactions/detail/${interaction_id}`,
+            {
+                headers: {
+                    "x-api-key": this.apiKey,
+                }
+            }
+        );
+        
+        if (error) {
+            console.error('Error:', error);
+        }
+
+        return data;
     }
 }

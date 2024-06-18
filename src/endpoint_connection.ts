@@ -1,9 +1,10 @@
 import { ChainStep, FeedbackAction, FeedbackActionMetadata } from './base.js';
 
 
-export const BASE_ENDPOINT_URL = process.env.NEBULY_ENDPOINT_URL || 'https://backend.nebuly.com/event-ingestion';
-export const INTERACTION_ENDPOINT_URL = `${BASE_ENDPOINT_URL}/api/v1/events/trace_interaction`;
-export const FEEDBACK_ENDPOINT_URL = `${BASE_ENDPOINT_URL}/api/v1/events/feedback`;
+export const BASE_ENDPOINT_URL = process.env.NEBULY_ENDPOINT_URL || 'https://backend.nebuly.com';
+export const INTERACTION_ENDPOINT_URL = `${BASE_ENDPOINT_URL}/event-ingestion/api/v1/events/trace_interaction`;
+export const FEEDBACK_ENDPOINT_URL = `${BASE_ENDPOINT_URL}/event-ingestion/api/v1/events/feedback`;
+export const EXTERNAL_ENDPOINT_URL = `${BASE_ENDPOINT_URL}/event-ingestion/api/external`;
 
 
 export async function sendDataToEndpoint(url: string, data: Record<string, unknown>, token: string): Promise<Record<string, unknown> | undefined> {
@@ -49,7 +50,7 @@ export function prepareDataForInterctionEndpoint(
     const history: string[][] = [];
     const length = Math.min(user_history.length, assistant_history.length);
     for (let i = 0; i < length; i++) {
-        history.push([user_history[i], assistant_history[i]]);
+        history.push([user_history[i] || "", assistant_history[i] || ""]);
     }
     const data = {
         interaction: {
@@ -70,14 +71,14 @@ export function prepareDataForInterctionEndpoint(
         if (llmSteps.length > 0) {
             for (let i = 0; i < llmSteps.length; i++) {
                 const llmStep = llmSteps[i];
-                const stepInput = llmStep.query || "";
-                const stepOutputs = llmStep.response || [];
+                const stepInput = llmStep?.query || "";
+                const stepOutputs = llmStep?.response || [];
                 if (stepOutputs.length == 0) {
                     continue;
                 }
                 const stepOutput = stepOutputs[0];
-                const assistantHistory = llmStep.metadata.assistantHistory as string[];
-                const userHistory = llmStep.metadata.userHistory as string[];
+                const assistantHistory = llmStep?.metadata.assistantHistory as string[];
+                const userHistory = llmStep?.metadata.userHistory as string[];
                 
                 if (input == "") {
                     // Take the input from the first LLM step if the input is empty
@@ -85,12 +86,12 @@ export function prepareDataForInterctionEndpoint(
                         data.interaction.input = stepInput;
                     }
                     if (assistantHistory.length > 0 && userHistory.length > 0) {
-                        data.interaction.history = assistantHistory.map((assistant, i) => [userHistory[i], assistant]);
+                        data.interaction.history = assistantHistory.map((assistant, i) => [userHistory[i] || "", assistant]);
                     }
                 }
                 if (answer == "") {
                     // Take the output from the last LLM step if the output is empty
-                    data.interaction.output = stepOutput;
+                    data.interaction.output = stepOutput || "";
                 }    
             }
         }
