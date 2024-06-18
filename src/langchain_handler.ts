@@ -54,7 +54,7 @@ export class NebulyCallbackHandler extends BaseCallbackHandler {
     }
     const key = parentRunId ? (runId + parentRunId) : runId;
     if (key in this.stack) {
-      this.stack[key].push(step);
+      this.stack[key]?.push(step);
     }
     else {
       this.stack[key] = [step];
@@ -66,7 +66,7 @@ export class NebulyCallbackHandler extends BaseCallbackHandler {
       return;
     }
     const key = parentRunId ? (runId + parentRunId) : runId;
-    const pendingStep = this.stack[key].pop();
+    const pendingStep = this.stack[key]?.pop();
     if (pendingStep) {
       if (extraMetadata) {
         pendingStep.metadata = { ...pendingStep.metadata, ...extraMetadata };
@@ -123,8 +123,8 @@ export class NebulyCallbackHandler extends BaseCallbackHandler {
   }
 
   async handleLLMEnd(output: LLMResult, runId: string, parentRunId?: string, tags?: string[]) { // eslint-disable-line
-    const generation = output.generations[0][output.generations[0].length - 1];
-    let outputText = generation.text;
+    const generation = output.generations[0] ? output.generations[0][output.generations[0].length - 1] : undefined;
+    let outputText = generation?.text || '';
     let extraMetadata: Record<string, unknown> = {};
     if (output.llmOutput) {
       const tokenUsage = output.llmOutput.tokenUsage as Record<string, number>;
@@ -180,10 +180,12 @@ export class NebulyCallbackHandler extends BaseCallbackHandler {
     if (metadata && "tags" in metadata) {
       this.tags = metadata["tags"] as Record<string, string>;
     }
-    const userHistory = messages[0].filter(m => m instanceof HumanMessage).map(m => m.content.toString());
-    const assistantHistory = messages[0].filter(m => m instanceof AIMessage).map(m => m.content.toString());    
+    const userHistory = messages[0]?.filter(m => m instanceof HumanMessage).map(m => m.content.toString());
+    const assistantHistory = messages[0]?.filter(m => m instanceof AIMessage).map(m => m.content.toString());    
     const newStep = new ChainStep(runId, ChainStepName.LLM);
-    newStep.query = messages[0][messages[0].length - 1].content.toString();
+    if (Array.isArray(messages[0]) && messages[0].length > 0) {
+      newStep.query = messages[0][messages[0].length - 1]?.content.toString();
+    }
     newStep.metadata = { model: modelName, userHistory: userHistory, assistantHistory: assistantHistory };
     this.addChainStepToStack(newStep, runId, parentRunId);
   }
