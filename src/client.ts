@@ -1,8 +1,16 @@
-import { prepareDataForInterctionEndpoint, prepareDataForFeedbackEndpoint, sendDataToEndpoint, INTERACTION_ENDPOINT_URL, FEEDBACK_ENDPOINT_URL } from "./endpoint_connection.js";
-import { ChainStep, RAGSource, FeedbackAction, FeedbackActionMetadata, ChainStepName } from "./base.js";
+import { prepareDataForInterctionEndpoint, prepareDataForFeedbackEndpoint, sendDataToEndpoint, INTERACTION_ENDPOINT_URL, FEEDBACK_ENDPOINT_URL, EXTERNAL_ENDPOINT_URL } from "./endpoint_connection";
+import { ChainStep, RAGSource, FeedbackAction, FeedbackActionMetadata, ChainStepName } from "./base";
+import createClient from "openapi-fetch";
+import type { paths } from "./generated/schemas"; 
+import { GetInteractionAggregatesRequest, GetInteractionAggregatesResponse } from "./endpoint_types";
 
 export class NebulySdk {
-    constructor(private apiKey: string) { }
+    client: ReturnType<typeof createClient>;
+
+    constructor(private apiKey: string) { 
+        this.apiKey = apiKey;
+        this.client = createClient<paths>({ baseUrl: EXTERNAL_ENDPOINT_URL });
+    }
 
     async sendFeedbackAction(action: FeedbackAction, metadata?: FeedbackActionMetadata): Promise<Record<string, unknown> | undefined> {
         metadata = Object.assign({ timestamp: new Date(), anonymize: true }, metadata);
@@ -68,5 +76,115 @@ export class NebulySdk {
             tags,
             anonymize
         );
+    }
+
+    async getInteractionAggregates({
+        time_range,
+        filters,
+        group_by,
+        limit,
+        offset
+    }: GetInteractionAggregatesRequest): Promise<GetInteractionAggregatesResponse> {
+        const { data, error } = await this.client.POST(
+            "/get-interaction-aggregates",
+            {
+                requestBody: {
+                    time_range: time_range,
+                    filters: filters,
+                    group_by: group_by,
+                    limit: limit,
+                    offset: offset
+                },
+                headers: {
+                    "Authorization": `Bearer ${this.apiKey}`,
+                }
+            }
+        );
+        
+        if (error) {
+            console.error('Error:', error);
+        }
+
+        return data;
+    }
+
+    async getInteractions({
+        time_range,
+        filters,
+        group_by,
+        limit,
+        offset
+    }: GetInteractionAggregatesRequest): Promise<GetInteractionAggregatesResponse> {
+        const { data, error } = await this.client.POST(
+            "/get-interactions",
+            {
+                body: {
+                    time_range: time_range,
+                    filters: filters,
+                    group_by: group_by,
+                    limit: limit,
+                    offset: offset
+                },
+                headers: {
+                    "Authorization": `Bearer ${this.apiKey}`,
+                }
+            }
+        );
+        
+        if (error) {
+            console.error('Error:', error);
+        }
+
+        return data;
+    }
+
+    async getInteractionTimeSeries({
+        time_range,
+        filters,
+        group_by,
+        limit,
+        offset
+    }: GetInteractionAggregatesRequest): Promise<GetInteractionAggregatesResponse> {
+        const { data, error } = await this.client.POST(
+            "/get-interaction-time-series",
+            {
+                body: {
+                    time_range: time_range,
+                    filters: filters,
+                    group_by: group_by,
+                    limit: limit,
+                    offset: offset
+                },
+                headers: {
+                    "Authorization": `Bearer ${this.apiKey}`,
+                }
+            }
+        );
+        
+        if (error) {
+            console.error('Error:', error);
+        }
+
+        return data;
+    }
+
+    async getInteractionDetails(interaction_id: string): Promise<GetInteractionAggregatesResponse> {
+        const { data, error } = await this.client.GET(
+            `/export/interactions/detail/{interaction_id}`,
+            {
+                params: {
+                    path: { interaction_id: interaction_id },
+                  },
+                headers: {
+                    "Authorization": `Bearer ${this.apiKey}`,
+                }
+            }
+        );
+        
+        if (error) {
+            console.error('Error:', error);
+        }
+
+        return data;
     }
 }

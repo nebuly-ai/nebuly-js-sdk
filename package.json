@@ -9,10 +9,12 @@
   ],
   "scripts": {
     "build": "tsc",
-    "publish": "npm run build && npm publish --access public"
+    "publish": "npm run build && npm publish --access public",
+    "lint": "eslint . --ext .ts --fix"
   },
   "dependencies": {
     "@langchain/core": "^0.1.21",
+    "openapi-fetch": "^0.9.7",
     "uuid": "^9.0.1"
   },
   "devDependencies": {
@@ -20,6 +22,8 @@
     "@typescript-eslint/eslint-plugin": "^7.2.0",
     "@typescript-eslint/parser": "^7.2.0",
     "eslint": "^8.57.0",
-    "openai": "^4.29.1"
+    "openai": "^4.29.1",
+    "openapi-typescript": "^7.0.0-rc.0",
+    "typescript": "^5.4.5"
   }
 }

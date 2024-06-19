@@ -32,7 +32,9 @@ export class ChainStep {
             const assistantHistory = this.metadata.assistantHistory as string[] || [];
             const length = Math.min(userHistory.length, assistantHistory.length);
             for (let i = 0; i < length; i++) {
-                history.push([userHistory[i], assistantHistory[i]]);
+                if (userHistory[i] && assistantHistory[i]) {
+                    history.push([userHistory[i] || "", assistantHistory[i] || ""]);
+                }
             }
             return {
                 model: modelName,
