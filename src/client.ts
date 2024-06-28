@@ -83,7 +83,9 @@ export class NebulySdk {
         filters,
         group_by,
         limit,
-        offset
+        offset,
+        variables,
+        additional_group_bys
     }: GetInteractionAggregatesRequest): Promise<GetInteractionAggregatesResponse> {
         const { data, error } = await this.client.POST(
             "/get-interaction-aggregates",
@@ -91,7 +93,9 @@ export class NebulySdk {
                 requestBody: {
                     time_range: time_range,
                     filters: filters,
+                    variables: variables,
                     group_by: group_by,
+                    additional_group_bys: additional_group_bys,
                     limit: limit,
                     offset: offset
                 },

@@ -547,6 +547,11 @@ export interface components {
             /** Delta */
             delta?: number;
         };
+        /**
+         * AggregateVariable
+         * @enum {string}
+         */
+        AggregateVariable: "n_interactions" | "n_users" | "user_feedback" | "cost" | "latency_seconds" | "stickiness" | "session_length" | "session_time" | "retention" | "n_intents";
         /** AllWarningRequest */
         AllWarningRequest: {
             time_range?: components["schemas"]["TimeRangeConfig"];
@@ -938,7 +943,9 @@ export interface components {
             /** Filters */
             filters: (components["schemas"]["FilterUserIntent"] | components["schemas"]["FilterNegativeUserIntent"] | components["schemas"]["FilterKeyword"] | components["schemas"]["FilterUserFeedback"] | components["schemas"]["FilterTag"] | components["schemas"]["FilterTypeOfProblem"] | components["schemas"]["FilterTopic"] | components["schemas"]["FilterUser"] | components["schemas"]["FilterUserQuery"] | components["schemas"]["FilterDataSource"] | components["schemas"]["FilterLanguage"] | components["schemas"]["FilterPii"])[];
             /** Group By */
-            group_by?: components["schemas"]["GroupByUserIntent"] | components["schemas"]["GroupByNegativeUserIntent"] | components["schemas"]["GroupByKeyword"] | components["schemas"]["GroupByUserFeedback"] | components["schemas"]["GroupByTag"] | components["schemas"]["GroupByTypeOfProblem"] | components["schemas"]["GroupByTopic"] | components["schemas"]["GroupByUser"] | null;
+            group_by?: components["schemas"]["GroupByUserIntent"] | components["schemas"]["GroupByNegativeUserIntent"] | components["schemas"]["GroupByKeyword"] | components["schemas"]["GroupByUserFeedback"] | components["schemas"]["GroupByTag"] | components["schemas"]["GroupByTypeOfProblem"] | components["schemas"]["GroupByTopic"] | components["schemas"]["GroupByUser"] | components["schemas"]["GroupByDay"] | components["schemas"]["GroupByCohort"] | components["schemas"]["GroupByPositiveComment"] | null;
+            /** Additional Group Bys */
+            additional_group_bys?: (components["schemas"]["GroupByUserIntent"] | components["schemas"]["GroupByNegativeUserIntent"] | components["schemas"]["GroupByKeyword"] | components["schemas"]["GroupByUserFeedback"] | components["schemas"]["GroupByTag"] | components["schemas"]["GroupByTypeOfProblem"] | components["schemas"]["GroupByTopic"] | components["schemas"]["GroupByUser"] | components["schemas"]["GroupByDay"] | components["schemas"]["GroupByCohort"] | components["schemas"]["GroupByPositiveComment"])[] | null;
             /**
              * Limit
              * @default 10
@@ -949,6 +956,8 @@ export interface components {
              * @default 0
              */
             offset: number;
+            /** Variables */
+            variables?: components["schemas"]["AggregateVariable"][];
         };
         /** GetInteractionTimeSeriesReq */
         GetInteractionTimeSeriesReq: {
@@ -957,6 +966,8 @@ export interface components {
             filters: (components["schemas"]["FilterUserIntent"] | components["schemas"]["FilterNegativeUserIntent"] | components["schemas"]["FilterKeyword"] | components["schemas"]["FilterUserFeedback"] | components["schemas"]["FilterTag"] | components["schemas"]["FilterTypeOfProblem"] | components["schemas"]["FilterTopic"] | components["schemas"]["FilterUser"] | components["schemas"]["FilterUserQuery"] | components["schemas"]["FilterDataSource"] | components["schemas"]["FilterLanguage"] | components["schemas"]["FilterPii"])[];
             /** @default day */
             granularity: components["schemas"]["Granularity"];
+            /** Variables */
+            variables?: components["schemas"]["AggregateVariable"][];
         };
         /** GetInteractionTimeSeriesResp */
         GetInteractionTimeSeriesResp: {
@@ -1049,6 +1060,26 @@ export interface components {
          * @enum {string}
          */
         Granularity: "hour" | "day" | "week" | "month" | "quarter" | "year";
+        /** GroupByCohort */
+        GroupByCohort: {
+            /**
+             * Kind
+             * @default cohort
+             * @constant
+             * @enum {string}
+             */
+            kind: "cohort";
+        };
+        /** GroupByDay */
+        GroupByDay: {
+            /**
+             * Kind
+             * @default day
+             * @constant
+             * @enum {string}
+             */
+            kind: "day";
+        };
         /** GroupByKeyword */
         GroupByKeyword: {
             /**
@@ -1069,10 +1100,22 @@ export interface components {
              */
             kind: "negative_user_intent";
         };
+        /** GroupByPositiveComment */
+        GroupByPositiveComment: {
+            /**
+             * Kind
+             * @default positive_comment
+             * @constant
+             * @enum {string}
+             */
+            kind: "positive_comment";
+        };
         /** GroupByQueryExternal */
         GroupByQueryExternal: {
             /** Group Name */
             group_name: string;
+            /** Additional Groups */
+            additional_groups: (string | null)[];
             /** N Interactions */
             n_interactions?: number;
             /** N Users */
@@ -1105,6 +1148,14 @@ export interface components {
             n_negative_explicit_user_feedback_prev?: number;
             /** N Feedback Prev */
             n_feedback_prev?: number;
+            /** Session Length */
+            session_length?: number;
+            /** Session Time */
+            session_time?: number;
+            /** Retention */
+            retention?: number;
+            /** N Intents */
+            n_intents?: number;
         };
         /** GroupByTag */
         GroupByTag: {
@@ -1152,6 +1203,8 @@ export interface components {
              * @default false
              */
             only_customs: boolean;
+            /** Similarity Search */
+            similarity_search?: string;
         };
         /** GroupByUser */
         GroupByUser: {
@@ -1777,7 +1830,7 @@ export interface components {
          * TimeRangeKind
          * @enum {string}
          */
-        TimeRangeKind: "custom" | "today" | "this_month" | "7_days" | "30_days" | "6_months" | "12_months" | "ytd";
+        TimeRangeKind: "custom" | "today" | "this_month" | "7_days" | "30_days" | "this_quarter" | "6_months" | "12_months" | "ytd";
         /** TopicFilterConfig */
         TopicFilterConfig: {
             /**
@@ -1825,6 +1878,14 @@ export interface components {
             n_positive_explicit_user_feedback_prev?: number;
             /** N Negative Explicit User Feedback Prev */
             n_negative_explicit_user_feedback_prev?: number;
+            /** Session Length */
+            session_length?: number;
+            /** Session Time */
+            session_time?: number;
+            /** Retention */
+            retention?: number;
+            /** N Intents */
+            n_intents?: number;
         };
         /** UserFilterConfig */
         UserFilterConfig: {

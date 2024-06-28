@@ -82,3 +82,10 @@ To continuously compile the typescript code:
 ```bash
 tsc -w
 ```
+
+### Generate Types and Endpoints
+We currently use openapi-fetch and openapi-typescript to generate the types and endpoints. To generate the types and endpoints you can use the following command:
+```bash
+npx openapi-typescript https://backend.nebuly.com/api/external/openapi.json -o ./src/generated/schemas.d.ts
+```
+Then you can modify directly the endpoint and types in the src/endpoint_types.ts file.
