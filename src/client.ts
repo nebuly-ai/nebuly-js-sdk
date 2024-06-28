@@ -1,13 +1,13 @@
 import { prepareDataForInterctionEndpoint, prepareDataForFeedbackEndpoint, sendDataToEndpoint, INTERACTION_ENDPOINT_URL, FEEDBACK_ENDPOINT_URL, EXTERNAL_ENDPOINT_URL } from "./endpoint_connection";
 import { ChainStep, RAGSource, FeedbackAction, FeedbackActionMetadata, ChainStepName } from "./base";
 import createClient from "openapi-fetch";
-import type { paths } from "./generated/schemas"; 
-import { GetInteractionAggregatesRequest, GetInteractionAggregatesResponse } from "./endpoint_types";
+import type { paths } from "./generated/schemas";
+import { GetInteractionAggregatesRequest, GetInteractionAggregatesResponse, GetInteractionDetailsResponse, GetInteractionsRequest, GetInteractionsResponse, GetInteractionTimeSeriesRequest, GetInteractionTimeSeriesResponse } from "./endpoint_types";
 
 export class NebulySdk {
     client: ReturnType<typeof createClient>;
 
-    constructor(private apiKey: string) { 
+    constructor(private apiKey: string) {
         this.apiKey = apiKey;
         this.client = createClient<paths>({ baseUrl: EXTERNAL_ENDPOINT_URL });
     }
@@ -19,18 +19,18 @@ export class NebulySdk {
     }
 
     async sendInteractionWithTrace(
-        input: string, 
-        output: string, 
-        chainSteps: ChainStep[], 
-        timeStart: Date, 
-        timeEnd: Date, 
-        endUser: string, 
-        userHistory: string[], 
-        assistantHistory: string[], 
-        tags?: Record<string, string>, 
+        input: string,
+        output: string,
+        chainSteps: ChainStep[],
+        timeStart: Date,
+        timeEnd: Date,
+        endUser: string,
+        userHistory: string[],
+        assistantHistory: string[],
+        tags?: Record<string, string>,
         anonymize?: boolean
     ): Promise<Record<string, unknown> | undefined> {
-        
+
         const payload = prepareDataForInterctionEndpoint(input, output, chainSteps, timeStart, timeEnd, userHistory, assistantHistory, endUser, tags, anonymize);
         return sendDataToEndpoint(INTERACTION_ENDPOINT_URL, payload, this.apiKey);
     }
@@ -48,7 +48,7 @@ export class NebulySdk {
         tags?: Record<string, string>,
         anonymize?: boolean,
     ): Promise<Record<string, unknown> | undefined> {
-        const userInput = input? input: messages[messages.length - 1].content as string;
+        const userInput = input ? input : messages[messages.length - 1].content as string;
         const modelStep = new ChainStep("model", ChainStepName.LLM);
         modelStep.query = userInput;
         modelStep.response = [modelOutput];
@@ -100,7 +100,7 @@ export class NebulySdk {
                 }
             }
         );
-        
+
         if (error) {
             console.error('Error:', error);
         }
@@ -111,17 +111,15 @@ export class NebulySdk {
     async getInteractions({
         time_range,
         filters,
-        group_by,
         limit,
         offset
-    }: GetInteractionAggregatesRequest): Promise<GetInteractionAggregatesResponse> {
+    }: GetInteractionsRequest): Promise<GetInteractionsResponse> {
         const { data, error } = await this.client.POST(
             "/get-interactions",
             {
                 body: {
                     time_range: time_range,
                     filters: filters,
-                    group_by: group_by,
                     limit: limit,
                     offset: offset
                 },
@@ -130,7 +128,7 @@ export class NebulySdk {
                 }
             }
         );
-        
+
         if (error) {
             console.error('Error:', error);
         }
@@ -141,26 +139,22 @@ export class NebulySdk {
     async getInteractionTimeSeries({
         time_range,
         filters,
-        group_by,
-        limit,
-        offset
-    }: GetInteractionAggregatesRequest): Promise<GetInteractionAggregatesResponse> {
+        granularity,
+    }: GetInteractionTimeSeriesRequest): Promise<GetInteractionTimeSeriesResponse> {
         const { data, error } = await this.client.POST(
             "/get-interaction-time-series",
             {
                 body: {
                     time_range: time_range,
                     filters: filters,
-                    group_by: group_by,
-                    limit: limit,
-                    offset: offset
+                    granularity: granularity,
                 },
                 headers: {
                     "Authorization": `Bearer ${this.apiKey}`,
                 }
             }
         );
-        
+
         if (error) {
             console.error('Error:', error);
         }
@@ -168,19 +162,19 @@ export class NebulySdk {
         return data;
     }
 
-    async getInteractionDetails(interaction_id: string): Promise<GetInteractionAggregatesResponse> {
+    async getInteractionDetails(interaction_id: string): Promise<GetInteractionDetailsResponse> {
         const { data, error } = await this.client.GET(
             `/export/interactions/detail/{interaction_id}`,
             {
                 params: {
                     path: { interaction_id: interaction_id },
-                  },
+                },
                 headers: {
                     "Authorization": `Bearer ${this.apiKey}`,
                 }
             }
         );
-        
+
         if (error) {
             console.error('Error:', error);
         }
