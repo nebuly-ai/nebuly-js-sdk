@@ -90,7 +90,7 @@ export class NebulySdk {
         const { data, error } = await this.client.POST(
             "/get-interaction-aggregates",
             {
-                requestBody: {
+                body: {
                     time_range: time_range,
                     filters: filters,
                     variables: variables,

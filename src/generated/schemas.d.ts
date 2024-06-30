@@ -873,6 +873,8 @@ export interface components {
              * @default false
              */
             allow_nulls: boolean;
+            /** Search */
+            search?: string;
         };
         /**
          * GenericTableSortOrder
@@ -943,9 +945,9 @@ export interface components {
             /** Filters */
             filters: (components["schemas"]["FilterUserIntent"] | components["schemas"]["FilterNegativeUserIntent"] | components["schemas"]["FilterKeyword"] | components["schemas"]["FilterUserFeedback"] | components["schemas"]["FilterTag"] | components["schemas"]["FilterTypeOfProblem"] | components["schemas"]["FilterTopic"] | components["schemas"]["FilterUser"] | components["schemas"]["FilterUserQuery"] | components["schemas"]["FilterDataSource"] | components["schemas"]["FilterLanguage"] | components["schemas"]["FilterPii"])[];
             /** Group By */
-            group_by?: components["schemas"]["GroupByUserIntent"] | components["schemas"]["GroupByNegativeUserIntent"] | components["schemas"]["GroupByKeyword"] | components["schemas"]["GroupByUserFeedback"] | components["schemas"]["GroupByTag"] | components["schemas"]["GroupByTypeOfProblem"] | components["schemas"]["GroupByTopic"] | components["schemas"]["GroupByUser"] | components["schemas"]["GroupByDay"] | components["schemas"]["GroupByCohort"] | components["schemas"]["GroupByPositiveComment"] | null;
+            group_by?: components["schemas"]["GroupByUserIntent"] | components["schemas"]["GroupByNegativeUserIntent"] | components["schemas"]["GroupByKeyword"] | components["schemas"]["GroupByUserFeedback"] | components["schemas"]["GroupByDataSource"] | components["schemas"]["GroupByLanguage"] | components["schemas"]["GroupByPii"] | components["schemas"]["GroupByTag"] | components["schemas"]["GroupByTypeOfProblem"] | components["schemas"]["GroupByTopic"] | components["schemas"]["GroupByUser"] | components["schemas"]["GroupByDay"] | components["schemas"]["GroupByCohort"] | components["schemas"]["GroupByPositiveComment"] | null;
             /** Additional Group Bys */
-            additional_group_bys?: (components["schemas"]["GroupByUserIntent"] | components["schemas"]["GroupByNegativeUserIntent"] | components["schemas"]["GroupByKeyword"] | components["schemas"]["GroupByUserFeedback"] | components["schemas"]["GroupByTag"] | components["schemas"]["GroupByTypeOfProblem"] | components["schemas"]["GroupByTopic"] | components["schemas"]["GroupByUser"] | components["schemas"]["GroupByDay"] | components["schemas"]["GroupByCohort"] | components["schemas"]["GroupByPositiveComment"])[] | null;
+            additional_group_bys?: (components["schemas"]["GroupByUserIntent"] | components["schemas"]["GroupByNegativeUserIntent"] | components["schemas"]["GroupByKeyword"] | components["schemas"]["GroupByUserFeedback"] | components["schemas"]["GroupByDataSource"] | components["schemas"]["GroupByLanguage"] | components["schemas"]["GroupByPii"] | components["schemas"]["GroupByTag"] | components["schemas"]["GroupByTypeOfProblem"] | components["schemas"]["GroupByTopic"] | components["schemas"]["GroupByUser"] | components["schemas"]["GroupByDay"] | components["schemas"]["GroupByCohort"] | components["schemas"]["GroupByPositiveComment"])[] | null;
             /**
              * Limit
              * @default 10
@@ -1070,6 +1072,16 @@ export interface components {
              */
             kind: "cohort";
         };
+        /** GroupByDataSource */
+        GroupByDataSource: {
+            /**
+             * Kind
+             * @default data_source
+             * @constant
+             * @enum {string}
+             */
+            kind: "data_source";
+        };
         /** GroupByDay */
         GroupByDay: {
             /**
@@ -1090,6 +1102,16 @@ export interface components {
              */
             kind: "keyword";
         };
+        /** GroupByLanguage */
+        GroupByLanguage: {
+            /**
+             * Kind
+             * @default language
+             * @constant
+             * @enum {string}
+             */
+            kind: "language";
+        };
         /** GroupByNegativeUserIntent */
         GroupByNegativeUserIntent: {
             /**
@@ -1099,6 +1121,16 @@ export interface components {
              * @enum {string}
              */
             kind: "negative_user_intent";
+        };
+        /** GroupByPii */
+        GroupByPii: {
+            /**
+             * Kind
+             * @default pii
+             * @constant
+             * @enum {string}
+             */
+            kind: "pii";
         };
         /** GroupByPositiveComment */
         GroupByPositiveComment: {
@@ -1156,6 +1188,8 @@ export interface components {
             retention?: number;
             /** N Intents */
             n_intents?: number;
+            /** N Intents Prev */
+            n_intents_prev?: number;
         };
         /** GroupByTag */
         GroupByTag: {
@@ -1886,6 +1920,8 @@ export interface components {
             retention?: number;
             /** N Intents */
             n_intents?: number;
+            /** N Intents Prev */
+            n_intents_prev?: number;
         };
         /** UserFilterConfig */
         UserFilterConfig: {
