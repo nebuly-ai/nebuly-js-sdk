@@ -434,6 +434,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/get-interaction-multi-aggregates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Get Interactions Multi Aggregates */
+        post: operations["get_interactions_multi_aggregates_get_interaction_multi_aggregates_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/get-interaction-aggregates": {
         parameters: {
             query?: never;
@@ -672,7 +689,7 @@ export interface components {
              * Filters
              * @default []
              */
-            filters: (components["schemas"]["FilterUserIntent"] | components["schemas"]["FilterNegativeUserIntent"] | components["schemas"]["FilterKeyword"] | components["schemas"]["FilterUserFeedback"] | components["schemas"]["FilterTag"] | components["schemas"]["FilterTypeOfProblem"] | components["schemas"]["FilterTopic"] | components["schemas"]["FilterUser"] | components["schemas"]["FilterUserQuery"] | components["schemas"]["FilterDataSource"] | components["schemas"]["FilterLanguage"] | components["schemas"]["FilterPii"])[];
+            filters: (components["schemas"]["FilterUserIntent"] | components["schemas"]["FilterNegativeUserIntent"] | components["schemas"]["FilterKeyword"] | components["schemas"]["FilterUserFeedback"] | components["schemas"]["FilterTag"] | components["schemas"]["FilterTypeOfProblem"] | components["schemas"]["FilterTopic"] | components["schemas"]["FilterUser"] | components["schemas"]["FilterUserQuery"] | components["schemas"]["FilterDataSource"] | components["schemas"]["FilterLanguage"] | components["schemas"]["FilterPii"] | components["schemas"]["FilterWarningMessage"] | components["schemas"]["FilterNegativeIntentMessage"])[];
         };
         /** ExportedInteraction */
         ExportedInteraction: {
@@ -760,6 +777,23 @@ export interface components {
             kind: "language";
             /** Values */
             values: string[];
+        };
+        /** FilterNegativeIntentMessage */
+        FilterNegativeIntentMessage: {
+            /**
+             * Kind
+             * @default negative_intent_message
+             * @constant
+             * @enum {string}
+             */
+            kind: "negative_intent_message";
+            /**
+             * Allow Nulls
+             * @default false
+             */
+            allow_nulls: boolean;
+            /** Search */
+            search?: string;
         };
         /** FilterNegativeUserIntent */
         FilterNegativeUserIntent: {
@@ -876,6 +910,23 @@ export interface components {
             /** Search */
             search?: string;
         };
+        /** FilterWarningMessage */
+        FilterWarningMessage: {
+            /**
+             * Kind
+             * @default warning_message
+             * @constant
+             * @enum {string}
+             */
+            kind: "warning_message";
+            /**
+             * Allow Nulls
+             * @default false
+             */
+            allow_nulls: boolean;
+            /** Search */
+            search?: string;
+        };
         /**
          * GenericTableSortOrder
          * @enum {string}
@@ -943,11 +994,11 @@ export interface components {
         GetInteractionAggregatesReq: {
             time_range: components["schemas"]["TimeRange"];
             /** Filters */
-            filters: (components["schemas"]["FilterUserIntent"] | components["schemas"]["FilterNegativeUserIntent"] | components["schemas"]["FilterKeyword"] | components["schemas"]["FilterUserFeedback"] | components["schemas"]["FilterTag"] | components["schemas"]["FilterTypeOfProblem"] | components["schemas"]["FilterTopic"] | components["schemas"]["FilterUser"] | components["schemas"]["FilterUserQuery"] | components["schemas"]["FilterDataSource"] | components["schemas"]["FilterLanguage"] | components["schemas"]["FilterPii"])[];
+            filters: (components["schemas"]["FilterUserIntent"] | components["schemas"]["FilterNegativeUserIntent"] | components["schemas"]["FilterKeyword"] | components["schemas"]["FilterUserFeedback"] | components["schemas"]["FilterTag"] | components["schemas"]["FilterTypeOfProblem"] | components["schemas"]["FilterTopic"] | components["schemas"]["FilterUser"] | components["schemas"]["FilterUserQuery"] | components["schemas"]["FilterDataSource"] | components["schemas"]["FilterLanguage"] | components["schemas"]["FilterPii"] | components["schemas"]["FilterWarningMessage"] | components["schemas"]["FilterNegativeIntentMessage"])[];
             /** Group By */
-            group_by?: components["schemas"]["GroupByUserIntent"] | components["schemas"]["GroupByNegativeUserIntent"] | components["schemas"]["GroupByKeyword"] | components["schemas"]["GroupByUserFeedback"] | components["schemas"]["GroupByDataSource"] | components["schemas"]["GroupByLanguage"] | components["schemas"]["GroupByPii"] | components["schemas"]["GroupByTag"] | components["schemas"]["GroupByTypeOfProblem"] | components["schemas"]["GroupByTopic"] | components["schemas"]["GroupByUser"] | components["schemas"]["GroupByDay"] | components["schemas"]["GroupByCohort"] | components["schemas"]["GroupByPositiveComment"] | null;
+            group_by?: components["schemas"]["GroupByUserIntent"] | components["schemas"]["GroupByNegativeUserIntent"] | components["schemas"]["GroupByKeyword"] | components["schemas"]["GroupByUserFeedback"] | components["schemas"]["GroupByDataSource"] | components["schemas"]["GroupByLanguage"] | components["schemas"]["GroupByPii"] | components["schemas"]["GroupByTag"] | components["schemas"]["GroupByTypeOfProblem"] | components["schemas"]["GroupByTopic"] | components["schemas"]["GroupByUser"] | components["schemas"]["GroupByDay"] | components["schemas"]["GroupByCohort"] | components["schemas"]["GroupByPositiveComment"] | components["schemas"]["GroupByFavoriteKind"] | components["schemas"]["GroupByFavoriteValue"] | null;
             /** Additional Group Bys */
-            additional_group_bys?: (components["schemas"]["GroupByUserIntent"] | components["schemas"]["GroupByNegativeUserIntent"] | components["schemas"]["GroupByKeyword"] | components["schemas"]["GroupByUserFeedback"] | components["schemas"]["GroupByDataSource"] | components["schemas"]["GroupByLanguage"] | components["schemas"]["GroupByPii"] | components["schemas"]["GroupByTag"] | components["schemas"]["GroupByTypeOfProblem"] | components["schemas"]["GroupByTopic"] | components["schemas"]["GroupByUser"] | components["schemas"]["GroupByDay"] | components["schemas"]["GroupByCohort"] | components["schemas"]["GroupByPositiveComment"])[] | null;
+            additional_group_bys?: (components["schemas"]["GroupByUserIntent"] | components["schemas"]["GroupByNegativeUserIntent"] | components["schemas"]["GroupByKeyword"] | components["schemas"]["GroupByUserFeedback"] | components["schemas"]["GroupByDataSource"] | components["schemas"]["GroupByLanguage"] | components["schemas"]["GroupByPii"] | components["schemas"]["GroupByTag"] | components["schemas"]["GroupByTypeOfProblem"] | components["schemas"]["GroupByTopic"] | components["schemas"]["GroupByUser"] | components["schemas"]["GroupByDay"] | components["schemas"]["GroupByCohort"] | components["schemas"]["GroupByPositiveComment"] | components["schemas"]["GroupByFavoriteKind"] | components["schemas"]["GroupByFavoriteValue"])[] | null;
             /**
              * Limit
              * @default 10
@@ -958,6 +1009,28 @@ export interface components {
              * @default 0
              */
             offset: number;
+            order_by?: components["schemas"]["QueryOrdering"];
+            /** Variables */
+            variables?: components["schemas"]["AggregateVariable"][];
+        };
+        /** GetInteractionMultiAggregatesReq */
+        GetInteractionMultiAggregatesReq: {
+            time_range: components["schemas"]["TimeRange"];
+            /** Filters */
+            filters: (components["schemas"]["FilterUserIntent"] | components["schemas"]["FilterNegativeUserIntent"] | components["schemas"]["FilterKeyword"] | components["schemas"]["FilterUserFeedback"] | components["schemas"]["FilterTag"] | components["schemas"]["FilterTypeOfProblem"] | components["schemas"]["FilterTopic"] | components["schemas"]["FilterUser"] | components["schemas"]["FilterUserQuery"] | components["schemas"]["FilterDataSource"] | components["schemas"]["FilterLanguage"] | components["schemas"]["FilterPii"] | components["schemas"]["FilterWarningMessage"] | components["schemas"]["FilterNegativeIntentMessage"])[];
+            /** Group By Groups */
+            group_by_groups: (components["schemas"]["GroupByUserIntent"] | components["schemas"]["GroupByNegativeUserIntent"] | components["schemas"]["GroupByKeyword"] | components["schemas"]["GroupByUserFeedback"] | components["schemas"]["GroupByDataSource"] | components["schemas"]["GroupByLanguage"] | components["schemas"]["GroupByPii"] | components["schemas"]["GroupByTag"] | components["schemas"]["GroupByTypeOfProblem"] | components["schemas"]["GroupByTopic"] | components["schemas"]["GroupByUser"] | components["schemas"]["GroupByDay"] | components["schemas"]["GroupByCohort"] | components["schemas"]["GroupByPositiveComment"] | components["schemas"]["GroupByFavoriteKind"] | components["schemas"]["GroupByFavoriteValue"])[][];
+            /**
+             * Limit
+             * @default 10
+             */
+            limit: number;
+            /**
+             * Offset
+             * @default 0
+             */
+            offset: number;
+            order_by?: components["schemas"]["QueryOrdering"];
             /** Variables */
             variables?: components["schemas"]["AggregateVariable"][];
         };
@@ -965,7 +1038,7 @@ export interface components {
         GetInteractionTimeSeriesReq: {
             time_range: components["schemas"]["TimeRange"];
             /** Filters */
-            filters: (components["schemas"]["FilterUserIntent"] | components["schemas"]["FilterNegativeUserIntent"] | components["schemas"]["FilterKeyword"] | components["schemas"]["FilterUserFeedback"] | components["schemas"]["FilterTag"] | components["schemas"]["FilterTypeOfProblem"] | components["schemas"]["FilterTopic"] | components["schemas"]["FilterUser"] | components["schemas"]["FilterUserQuery"] | components["schemas"]["FilterDataSource"] | components["schemas"]["FilterLanguage"] | components["schemas"]["FilterPii"])[];
+            filters: (components["schemas"]["FilterUserIntent"] | components["schemas"]["FilterNegativeUserIntent"] | components["schemas"]["FilterKeyword"] | components["schemas"]["FilterUserFeedback"] | components["schemas"]["FilterTag"] | components["schemas"]["FilterTypeOfProblem"] | components["schemas"]["FilterTopic"] | components["schemas"]["FilterUser"] | components["schemas"]["FilterUserQuery"] | components["schemas"]["FilterDataSource"] | components["schemas"]["FilterLanguage"] | components["schemas"]["FilterPii"] | components["schemas"]["FilterWarningMessage"] | components["schemas"]["FilterNegativeIntentMessage"])[];
             /** @default day */
             granularity: components["schemas"]["Granularity"];
             /** Variables */
@@ -984,7 +1057,7 @@ export interface components {
         GetInteractionsReq: {
             time_range: components["schemas"]["TimeRange"];
             /** Filters */
-            filters: (components["schemas"]["FilterUserIntent"] | components["schemas"]["FilterNegativeUserIntent"] | components["schemas"]["FilterKeyword"] | components["schemas"]["FilterUserFeedback"] | components["schemas"]["FilterTag"] | components["schemas"]["FilterTypeOfProblem"] | components["schemas"]["FilterTopic"] | components["schemas"]["FilterUser"] | components["schemas"]["FilterUserQuery"] | components["schemas"]["FilterDataSource"] | components["schemas"]["FilterLanguage"] | components["schemas"]["FilterPii"])[];
+            filters: (components["schemas"]["FilterUserIntent"] | components["schemas"]["FilterNegativeUserIntent"] | components["schemas"]["FilterKeyword"] | components["schemas"]["FilterUserFeedback"] | components["schemas"]["FilterTag"] | components["schemas"]["FilterTypeOfProblem"] | components["schemas"]["FilterTopic"] | components["schemas"]["FilterUser"] | components["schemas"]["FilterUserQuery"] | components["schemas"]["FilterDataSource"] | components["schemas"]["FilterLanguage"] | components["schemas"]["FilterPii"] | components["schemas"]["FilterWarningMessage"] | components["schemas"]["FilterNegativeIntentMessage"])[];
             /**
              * Limit
              * @default 10
@@ -1092,6 +1165,26 @@ export interface components {
              */
             kind: "day";
         };
+        /** GroupByFavoriteKind */
+        GroupByFavoriteKind: {
+            /**
+             * Kind
+             * @default favorite_kind
+             * @constant
+             * @enum {string}
+             */
+            kind: "favorite_kind";
+        };
+        /** GroupByFavoriteValue */
+        GroupByFavoriteValue: {
+            /**
+             * Kind
+             * @default favorite_value
+             * @constant
+             * @enum {string}
+             */
+            kind: "favorite_value";
+        };
         /** GroupByKeyword */
         GroupByKeyword: {
             /**
@@ -1111,6 +1204,57 @@ export interface components {
              * @enum {string}
              */
             kind: "language";
+        };
+        /** GroupByMultiQueryExternal */
+        GroupByMultiQueryExternal: {
+            /** Group Name */
+            group_name: string;
+            /** Additional Groups */
+            additional_groups: (string | null)[];
+            /** N Interactions */
+            n_interactions?: number;
+            /** N Users */
+            n_users?: number;
+            /** N Positive Implicit User Feedback */
+            n_positive_implicit_user_feedback?: number;
+            /** N Negative Implicit User Feedback */
+            n_negative_implicit_user_feedback?: number;
+            /** N Positive Explicit User Feedback */
+            n_positive_explicit_user_feedback?: number;
+            /** N Negative Explicit User Feedback */
+            n_negative_explicit_user_feedback?: number;
+            /** N Feedback */
+            n_feedback?: number;
+            /** Cost */
+            cost?: number;
+            /** Latency Seconds */
+            latency_seconds?: number;
+            /** N Interactions Prev */
+            n_interactions_prev?: number;
+            /** N Users Prev */
+            n_users_prev?: number;
+            /** N Positive Implicit User Feedback Prev */
+            n_positive_implicit_user_feedback_prev?: number;
+            /** N Negative Implicit User Feedback Prev */
+            n_negative_implicit_user_feedback_prev?: number;
+            /** N Positive Explicit User Feedback Prev */
+            n_positive_explicit_user_feedback_prev?: number;
+            /** N Negative Explicit User Feedback Prev */
+            n_negative_explicit_user_feedback_prev?: number;
+            /** N Feedback Prev */
+            n_feedback_prev?: number;
+            /** Session Length */
+            session_length?: number;
+            /** Session Time */
+            session_time?: number;
+            /** Retention */
+            retention?: number;
+            /** N Intents */
+            n_intents?: number;
+            /** N Intents Prev */
+            n_intents_prev?: number;
+            /** Kinds */
+            kinds: string[];
         };
         /** GroupByNegativeUserIntent */
         GroupByNegativeUserIntent: {
@@ -1485,6 +1629,12 @@ export interface components {
              * Format: date-time
              */
             timestamp: string;
+            /** Warning Message */
+            warning_message?: string;
+            /** Negative Intent Message */
+            negative_intent_message?: string;
+            /** Feedback Type */
+            feedback_type?: components["schemas"]["FeedbackType"];
         };
         /** InteractionsResp */
         InteractionsResp: {
@@ -1566,6 +1716,11 @@ export interface components {
             /** Values */
             values: string[];
         };
+        /**
+         * OrderByVariable
+         * @enum {string}
+         */
+        OrderByVariable: "n_interactions" | "n_users" | "user_feedback" | "positive_feedback" | "negative_feedback" | "positive_implicit_feedback" | "negative_implicit_feedback" | "positive_explicit_feedback" | "negative_explicit_feedback" | "trend" | "retention";
         /** OverviewPerformance */
         OverviewPerformance: {
             /** Dau */
@@ -1601,6 +1756,17 @@ export interface components {
             limit?: number;
             /** Data */
             data: components["schemas"]["ExportedInteraction"][];
+        };
+        /** Paginated[GroupByMultiQueryExternal] */
+        Paginated_GroupByMultiQueryExternal_: {
+            /** Total */
+            total?: number;
+            /** Offset */
+            offset?: number;
+            /** Limit */
+            limit?: number;
+            /** Data */
+            data: components["schemas"]["GroupByMultiQueryExternal"][];
         };
         /** Paginated[GroupByQueryExternal] */
         Paginated_GroupByQueryExternal_: {
@@ -1710,6 +1876,17 @@ export interface components {
             prompt: string;
             /** Config Params */
             config_params: components["schemas"]["ConfigParam"][];
+        };
+        /** QueryOrdering */
+        QueryOrdering: {
+            /** @default n_interactions */
+            by: components["schemas"]["OrderByVariable"];
+            /**
+             * Direction
+             * @default desc
+             * @enum {string}
+             */
+            direction: "asc" | "desc";
         };
         /** RagSourceVariant */
         RagSourceVariant: {
@@ -2981,6 +3158,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ResponseMessage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_interactions_multi_aggregates_get_interaction_multi_aggregates_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GetInteractionMultiAggregatesReq"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Paginated_GroupByMultiQueryExternal_"];
                 };
             };
             /** @description Validation Error */

@@ -14,3 +14,6 @@ export type GetInteractionTimeSeriesRequest = paths["/get-interaction-time-serie
 export type GetInteractionTimeSeriesResponse = paths["/get-interaction-time-series"]["post"]["responses"]["200"]["content"]["application/json"];
 
 export type GetInteractionDetailsResponse = paths["/export/interactions/detail/{interaction_id}"]["get"]["responses"]["200"]["content"]["application/json"];
+
+export type GetInteractionMultiAggregatesRequest = paths["/get-interaction-multi-aggregates"]["post"]["requestBody"]["content"]["application/json"];
+export type GetInteractionMultiAggregatesResponse = paths["/get-interaction-multi-aggregates"]["post"]["responses"]["200"]["content"]["application/json"];

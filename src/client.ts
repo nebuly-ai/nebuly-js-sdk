@@ -2,7 +2,7 @@ import { prepareDataForInterctionEndpoint, prepareDataForFeedbackEndpoint, sendD
 import { ChainStep, RAGSource, FeedbackAction, FeedbackActionMetadata, ChainStepName } from "./base";
 import createClient from "openapi-fetch";
 import type { paths } from "./generated/schemas";
-import { GetInteractionAggregatesRequest, GetInteractionAggregatesResponse, GetInteractionDetailsResponse, GetInteractionsRequest, GetInteractionsResponse, GetInteractionTimeSeriesRequest, GetInteractionTimeSeriesResponse } from "./endpoint_types";
+import { GetInteractionAggregatesRequest, GetInteractionAggregatesResponse, GetInteractionDetailsResponse, GetInteractionMultiAggregatesRequest, GetInteractionMultiAggregatesResponse, GetInteractionsRequest, GetInteractionsResponse, GetInteractionTimeSeriesRequest, GetInteractionTimeSeriesResponse } from "./endpoint_types";
 
 export class NebulySdk {
     client: ReturnType<typeof createClient>;
@@ -172,6 +172,40 @@ export class NebulySdk {
             {
                 params: {
                     path: { interaction_id: interaction_id },
+                },
+                headers: {
+                    "Authorization": `Bearer ${this.apiKey}`,
+                }
+            }
+        );
+
+        if (error) {
+            console.error('Error:', error);
+        }
+
+        return data;
+    }
+
+    async getInteractionMultiAggregates({
+        time_range,
+        filters,
+        group_by_groups,
+        limit,
+        offset,
+        order_by,
+        variables,
+    }: GetInteractionMultiAggregatesRequest): Promise<GetInteractionMultiAggregatesResponse> {
+        const { data, error } = await this.client.POST(
+            "/get-interaction-multi-aggregates",
+            {
+                body: {
+                    time_range: time_range,
+                    filters: filters,
+                    variables: variables,
+                    group_by_groups: group_by_groups,
+                    order_by: order_by,
+                    limit: limit,
+                    offset: offset
                 },
                 headers: {
                     "Authorization": `Bearer ${this.apiKey}`,
