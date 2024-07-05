@@ -84,6 +84,7 @@ export class NebulySdk {
         group_by,
         limit,
         offset,
+        order_by,
         variables,
         additional_group_bys
     }: GetInteractionAggregatesRequest): Promise<GetInteractionAggregatesResponse> {
@@ -95,6 +96,7 @@ export class NebulySdk {
                     filters: filters,
                     variables: variables,
                     group_by: group_by,
+                    order_by: order_by,
                     additional_group_bys: additional_group_bys,
                     limit: limit,
                     offset: offset
