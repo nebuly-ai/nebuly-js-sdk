@@ -4,6 +4,20 @@ import createClient from "openapi-fetch";
 import type { paths } from "./generated/schemas";
 import { GetInteractionAggregatesRequest, GetInteractionAggregatesResponse, GetInteractionDetailsResponse, GetInteractionMultiAggregatesRequest, GetInteractionMultiAggregatesResponse, GetInteractionsRequest, GetInteractionsResponse, GetInteractionTimeSeriesRequest, GetInteractionTimeSeriesResponse } from "./endpoint_types";
 
+interface SendOpenAIInteractionProps {
+    messages: any[];  // eslint-disable-line @typescript-eslint/no-explicit-any
+    modelOutput: string;
+    model: string;
+    timeStart: Date;
+    timeEnd: Date;
+    endUser: string;
+    input?: string;
+    systemPrompt?: string;
+    ragSources?: RAGSource[];
+    tags?: Record<string, string>;
+    anonymize?: boolean;
+}
+
 export class NebulySdk {
     client: ReturnType<typeof createClient>;
 
@@ -35,6 +49,37 @@ export class NebulySdk {
         return sendDataToEndpoint(INTERACTION_ENDPOINT_URL, payload, this.apiKey);
     }
 
+    async sendOpenAIInteractionWithProps(props: SendOpenAIInteractionProps): Promise<Record<string, unknown> | undefined> {
+        const userInput = props.input ? props.input : props.messages[props.messages.length - 1].content as string;
+        const modelStep = new ChainStep("model", ChainStepName.LLM);
+        modelStep.query = userInput;
+        modelStep.response = [props.modelOutput];
+        modelStep.start = props.timeStart;
+        modelStep.end = props.timeEnd;
+        modelStep.metadata = { model: props.model, system_prompt: props.systemPrompt };
+        const chain_steps = [];
+        if (props.ragSources) {
+            for (const source of props.ragSources) {
+                chain_steps.push(source.toChainStep());
+            }
+        }
+        chain_steps.push(modelStep);
+        const userHistory = props.messages.slice(0, -1).filter(h => h.role === 'user').map(h => h.content as string);
+        const assistantHistory = props.messages.filter(h => h.role === 'assistant').map(h => h.content as string).slice(-userHistory.length);
+        return this.sendInteractionWithTrace(
+            userInput,
+            props.modelOutput,
+            chain_steps,
+            props.timeStart,
+            props.timeEnd,
+            props.endUser,
+            userHistory,
+            assistantHistory,
+            props.tags,
+            props.anonymize
+        );
+    }
+
     async sendOpenAIInteraction(
         messages: any[],  // eslint-disable-line @typescript-eslint/no-explicit-any
         modelOutput: string,
@@ -48,34 +93,19 @@ export class NebulySdk {
         tags?: Record<string, string>,
         anonymize?: boolean,
     ): Promise<Record<string, unknown> | undefined> {
-        const userInput = input ? input : messages[messages.length - 1].content as string;
-        const modelStep = new ChainStep("model", ChainStepName.LLM);
-        modelStep.query = userInput;
-        modelStep.response = [modelOutput];
-        modelStep.start = timeStart
-        modelStep.end = timeEnd
-        modelStep.metadata = { model: model, system_prompt: systemPrompt };
-        const chain_steps = []
-        if (ragSources) {
-            for (const source of ragSources) {
-                chain_steps.push(source.toChainStep());
-            }
-        }
-        chain_steps.push(modelStep);
-        const userHistory = messages.slice(0, -1).filter(h => h.role === 'user').map(h => h.content as string);
-        const assistantHistory = messages.filter(h => h.role === 'assistant').map(h => h.content as string).slice(-userHistory.length);
-        return this.sendInteractionWithTrace(
-            userInput,
+        return this.sendOpenAIInteractionWithProps({
+            messages,
             modelOutput,
-            chain_steps,
+            model,
             timeStart,
             timeEnd,
             endUser,
-            userHistory,
-            assistantHistory,
+            input,
+            systemPrompt,
+            ragSources,
             tags,
-            anonymize
-        );
+            anonymize,
+        });
     }
 
     async getInteractionAggregates({
