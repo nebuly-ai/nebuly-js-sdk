@@ -2,7 +2,7 @@ import { prepareDataForInterctionEndpoint, prepareDataForFeedbackEndpoint, sendD
 import { ChainStep, RAGSource, FeedbackAction, FeedbackActionMetadata, ChainStepName } from "./base";
 import createClient from "openapi-fetch";
 import type { paths } from "./generated/schemas";
-import { GetInteractionAggregatesRequest, GetInteractionAggregatesResponse, GetInteractionDetailsResponse, GetInteractionMultiAggregatesRequest, GetInteractionMultiAggregatesResponse, GetInteractionsRequest, GetInteractionsResponse, GetInteractionTimeSeriesRequest, GetInteractionTimeSeriesResponse } from "./endpoint_types";
+import { DeleteInteractionsRequest, DeleteInteractionsResponse, GetInteractionAggregatesRequest, GetInteractionAggregatesResponse, GetInteractionDetailsResponse, GetInteractionMultiAggregatesRequest, GetInteractionMultiAggregatesResponse, GetInteractionsRequest, GetInteractionsResponse, GetInteractionTimeSeriesRequest, GetInteractionTimeSeriesResponse } from "./endpoint_types";
 
 interface SendOpenAIInteractionProps {
     messages: any[];  // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -238,6 +238,26 @@ export class NebulySdk {
                     order_by: order_by,
                     limit: limit,
                     offset: offset
+                },
+                headers: {
+                    "Authorization": `Bearer ${this.apiKey}`,
+                }
+            }
+        );
+
+        if (error) {
+            console.error('Error:', error);
+        }
+
+        return data;
+    }
+
+    async deleteInteractions(request: DeleteInteractionsRequest): Promise<DeleteInteractionsResponse> {
+        const { data, error } = await this.client.POST(
+            '/projects/delete-interactions',
+            {
+                body: {
+                    ...request
                 },
                 headers: {
                     "Authorization": `Bearer ${this.apiKey}`,

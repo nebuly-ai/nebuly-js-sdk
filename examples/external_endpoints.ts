@@ -58,6 +58,26 @@ async function main() {
     });
 
     console.log(multiAggregates);
+
+    console.log("Deleting interactions...");
+    const deletedInteractionsResponse = await client.deleteInteractions({
+        filters: [],
+        time_range: {
+            start: new Date("2024-01-01T00:00:00Z"),
+            end: new Date()
+        }
+    });
+    console.log(deletedInteractionsResponse);
+
+    console.log("Checking if interactions are deleted...");
+    const shouldBeEmpty = await client.getInteractions({
+        filters: [],
+        time_range: {
+            start: new Date("2024-01-01T00:00:00Z"),
+            end: new Date()
+        }
+    });
+    console.log(shouldBeEmpty);
 }
 
 main();

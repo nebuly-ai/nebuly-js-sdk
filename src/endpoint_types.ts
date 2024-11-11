@@ -17,3 +17,6 @@ export type GetInteractionDetailsResponse = paths["/export/interactions/detail/{
 
 export type GetInteractionMultiAggregatesRequest = paths["/get-interaction-multi-aggregates"]["post"]["requestBody"]["content"]["application/json"];
 export type GetInteractionMultiAggregatesResponse = paths["/get-interaction-multi-aggregates"]["post"]["responses"]["200"]["content"]["application/json"];
+
+export type DeleteInteractionsRequest = paths["/projects/delete-interactions"]["post"]["requestBody"]["content"]["application/json"];
+export type DeleteInteractionsResponse = paths["/projects/delete-interactions"]["post"]["responses"]["200"]["content"]["application/json"];
