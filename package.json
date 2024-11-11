@@ -10,7 +10,7 @@
   "scripts": {
     "build": "tsc",
     "publish": "npm run build && npm publish --access public",
-    "lint": "eslint . --ext .ts --fix"
+    "lint": "eslint src/ --ext .ts --fix"
   },
   "dependencies": {
     "@langchain/core": "^0.1.21",
