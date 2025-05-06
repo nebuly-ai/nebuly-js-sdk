@@ -58,6 +58,7 @@ The parameters needed for the `sendOpenAIInteraction` are the following:
 
 ### Feedback actions
 You can send to the nebuly platform feedbacks actions like: `thumbs_up`, `thumbs_down`, `copy_input` and `copy_output`. The feedback actions are sent to the nebuly platform using the `sendFeedbackAction` method. 
+It is critically important to correctly specify the action metadata when sending it to the platform. The metadata must include the necessary information to map the feedback action to its corresponding interaction. Specifically, the interaction’s input, output, and end-user details are used to accurately link the feedback to the correct interaction. If metadata is not provided, the thumbs up/down feedback will be assigned to the interaction that is closest in time to when the feedback was received.
 ```typescript
 nebulySdk.sendFeedbackAction(
     {
