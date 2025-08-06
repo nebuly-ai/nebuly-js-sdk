@@ -16,6 +16,7 @@ interface SendOpenAIInteractionProps {
     ragSources?: RAGSource[];
     tags?: Record<string, string>;
     anonymize?: boolean;
+    conversation_id?: string;
 }
 
 export class NebulySdk {
@@ -42,10 +43,23 @@ export class NebulySdk {
         userHistory: string[],
         assistantHistory: string[],
         tags?: Record<string, string>,
-        anonymize?: boolean
+        anonymize?: boolean,
+        conversation_id?: string,
     ): Promise<Record<string, unknown> | undefined> {
 
-        const payload = prepareDataForInterctionEndpoint(input, output, chainSteps, timeStart, timeEnd, userHistory, assistantHistory, endUser, tags, anonymize);
+        const payload = prepareDataForInterctionEndpoint(
+            input,
+            output,
+            chainSteps,
+            timeStart,
+            timeEnd,
+            userHistory,
+            assistantHistory,
+            endUser,
+            tags,
+            anonymize,
+            conversation_id,
+        );
         return sendDataToEndpoint(INTERACTION_ENDPOINT_URL, payload, this.apiKey);
     }
 
@@ -57,6 +71,7 @@ export class NebulySdk {
         modelStep.start = props.timeStart;
         modelStep.end = props.timeEnd;
         modelStep.metadata = { model: props.model, system_prompt: props.systemPrompt };
+
         const chain_steps = [];
         if (props.ragSources) {
             for (const source of props.ragSources) {
@@ -64,8 +79,10 @@ export class NebulySdk {
             }
         }
         chain_steps.push(modelStep);
+
         const userHistory = props.messages.slice(0, -1).filter(h => h.role === 'user').map(h => h.content as string);
         const assistantHistory = props.messages.filter(h => h.role === 'assistant').map(h => h.content as string).slice(-userHistory.length);
+
         return this.sendInteractionWithTrace(
             userInput,
             props.modelOutput,
@@ -76,7 +93,8 @@ export class NebulySdk {
             userHistory,
             assistantHistory,
             props.tags,
-            props.anonymize
+            props.anonymize,
+            props.conversation_id,
         );
     }
 
@@ -92,6 +110,7 @@ export class NebulySdk {
         ragSources?: RAGSource[],
         tags?: Record<string, string>,
         anonymize?: boolean,
+        conversation_id?: string,
     ): Promise<Record<string, unknown> | undefined> {
         return this.sendOpenAIInteractionWithProps({
             messages,
@@ -105,6 +124,7 @@ export class NebulySdk {
             ragSources,
             tags,
             anonymize,
+            conversation_id,
         });
     }
 
