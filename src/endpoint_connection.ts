@@ -1,16 +1,14 @@
 import { ChainStep, FeedbackAction, FeedbackActionMetadata } from './base.js';
 
-
 export const BASE_ENDPOINT_URL = process.env.NEBULY_ENDPOINT_URL || 'https://backend.nebuly.com';
 export const INTERACTION_ENDPOINT_URL = `${BASE_ENDPOINT_URL}/event-ingestion/api/v1/events/trace_interaction`;
 export const FEEDBACK_ENDPOINT_URL = `${BASE_ENDPOINT_URL}/event-ingestion/api/v1/events/feedback`;
 export const EXTERNAL_ENDPOINT_URL = `${BASE_ENDPOINT_URL}/api/external`;
 
-
 export async function sendDataToEndpoint(url: string, data: Record<string, unknown>, token: string): Promise<Record<string, unknown> | undefined> {
     try {
         const response = await fetch(url, {
-            method: 'POST', // or 'PUT' depending on the API
+            method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -31,27 +29,27 @@ export async function sendDataToEndpoint(url: string, data: Record<string, unkno
 }
 
 export function prepareDataForInterctionEndpoint(
-    input: string, 
-    answer: string, 
+    input: string,
+    answer: string,
     chainSteps: ChainStep[],
-    timeStart: Date, 
-    timeEnd: Date, 
+    timeStart: Date,
+    timeEnd: Date,
     user_history: string[],
     assistant_history: string[],
     endUser: string,
     tags?: Record<string, string>,
-    anonymize?: boolean
+    anonymize?: boolean,
+    conversation_id?: string,
 ): Record<string, unknown> {
     // convert chain_steps to spans
-    const traces = chainSteps.map((step) => {
-        return step.toTrace();
-    });
+    const traces = chainSteps.map((step) => step.toTrace());
 
     const history: string[][] = [];
     const length = Math.min(user_history.length, assistant_history.length);
     for (let i = 0; i < length; i++) {
         history.push([user_history[i] || "", assistant_history[i] || ""]);
     }
+
     const data = {
         interaction: {
             input: input,
@@ -61,6 +59,7 @@ export function prepareDataForInterctionEndpoint(
             history: history,
             end_user: endUser,
             tags: tags || {},
+            conversation_id: conversation_id || null
         },
         traces: traces,
         anonymize: anonymize || false,
@@ -79,9 +78,8 @@ export function prepareDataForInterctionEndpoint(
                 const stepOutput = stepOutputs[0];
                 const assistantHistory = llmStep?.metadata.assistantHistory as string[];
                 const userHistory = llmStep?.metadata.userHistory as string[];
-                
+
                 if (input == "") {
-                    // Take the input from the first LLM step if the input is empty
                     if (i == 0) {
                         data.interaction.input = stepInput;
                     }
@@ -89,17 +87,15 @@ export function prepareDataForInterctionEndpoint(
                         data.interaction.history = assistantHistory.map((assistant, i) => [userHistory[i] || "", assistant]);
                     }
                 }
-                if (answer == "") {
-                    // Take the output from the last LLM step if the output is empty
+                if (answer === "") {
                     data.interaction.output = stepOutput || "";
-                }    
+                }
             }
         }
     }
 
     return data;
 }
-
 
 export function prepareDataForFeedbackEndpoint(
     feedbackAction: FeedbackAction,

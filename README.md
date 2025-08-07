@@ -48,13 +48,20 @@ async function main() {
 
 main();
 ```
-The parameters needed for the `sendOpenAIInteraction` are the following:
+The mandatory parameters for the `sendOpenAIInteraction` are the following:
 - `messages`: The inputs that were given to the model
 - `modelOutput`: The output of the model
 - `model`: The model that was used
 - `startTime`: The start time of the call to the model
 - `endTime`: The end time of the call to the model
 - `endUser`: The unique identifier of the end user
+The optional parameters are:
+- `input`: The input of the user
+- `systemPrompt`: The system prompt that was used
+- `ragSources`: The sources that were used for the RAG (Retrieval-Augmented Generation) model
+- `tags`: A dictionary of tags that can be used to filter the interactions in the nebuly platform
+- `anonymize`: If set to true, the input and output will be anonymized before being sent to the nebuly platform
+- `conversation_id`: The conversation ID that can be used to group interactions together. This is useful for tracking conversations across multiple interactions.
 
 ### Feedback actions
 You can send to the nebuly platform feedbacks actions like: `thumbs_up`, `thumbs_down`, `copy_input` and `copy_output`. The feedback actions are sent to the nebuly platform using the `sendFeedbackAction` method. 
