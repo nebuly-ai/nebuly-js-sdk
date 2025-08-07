@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@langchain/core": "^0.1.21",
+    "@nebuly-ai/nebuly-js-sdk": "^0.1.17",
     "openapi-fetch": "^0.9.7",
     "uuid": "^9.0.1"
   },
